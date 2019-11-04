@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
-const { mongoSchema: TweetObjectSchema } = require('../utils/TweetObject');
+const {
+  mongoSchema: TweetObjectSchema,
+  joiSchema: apiResponseSchema
+} = require('../utils/TweetObject');
 
 /**
  * TestCase Schema
@@ -11,6 +14,24 @@ const testCaseSchema = new mongoose.Schema({
     testedWith: TweetObjectSchema
   },
   terminated: Boolean
+});
+
+testCaseSchema.method({
+  transform() {
+    const transformed = {
+      tweets: { subject: {}, testedWith: {} },
+      terminated: this.terminated
+    };
+
+    const tweetFields = Array.from(apiResponseSchema._ids._byKey).map(id => id[0]);
+
+    tweetFields.forEach((field) => {
+      transformed.tweets.subject[field] = this.tweets.subject[field];
+      transformed.tweets.testedWith[field] = this.tweets.testedWith[field];
+    });
+
+    return transformed;
+  }
 });
 
 /**

@@ -17,7 +17,7 @@ describe('Test API', () => {
         .get(`/v1/test/${testId}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          const { error } = rootResponse.test.validate(res.body);
+          const { error } = rootResponse.validate(res.body);
           expect(error).to.be.undefined;
         }));
   });

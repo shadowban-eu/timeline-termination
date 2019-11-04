@@ -40,8 +40,8 @@ describe('Test Service', () => {
         testedWith: notBannedCommentTest
       } = await TestService.getTweetsForSubject(notBannedCommentId);
 
-      notBannedTestTweetId = notBannedTestTweet.id_str;
-      notBannedCommentTestId = notBannedCommentTest.id_str;
+      notBannedTestTweetId = notBannedTestTweet.tweetId;
+      notBannedCommentTestId = notBannedCommentTest.tweetId;
     });
 
     it('returns true when tweet is banned ', async () => {

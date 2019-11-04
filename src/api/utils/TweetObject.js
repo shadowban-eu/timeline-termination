@@ -10,7 +10,9 @@ const mongoSchema = new Schema({
   possiblySensitive: Boolean,
   favoriteCount: Number,
   replyCount: Number,
-  retweetCount: Number,
+  retweetCount: Number
+}, {
+  id: false
 });
 
 const joiSchema = Joi.object({
