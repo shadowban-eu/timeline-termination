@@ -12,7 +12,7 @@ const mongoSchema = new Schema({
   replyCount: Number,
   retweetCount: Number
 }, {
-  id: false
+  _id: false
 });
 
 const joiSchema = Joi.object({
