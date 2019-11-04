@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { TweetObjectSchema } = require('../utils/TweetObject');
+const { mongoSchema: TweetObjectSchema } = require('../utils/TweetObject');
 
 /**
  * TestCase Schema

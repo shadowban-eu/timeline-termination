@@ -2,8 +2,9 @@
 const { expect } = require('chai');
 const GuestSession = require('../../services/GuestSession');
 const TestService = require('../../services/TestService');
+const TweetObject = require('../../utils/TweetObject');
 
-const { tweetObject } = require('../../validations/test.validation');
+const { joiSchema: tweetObjectJoiSchema } = TweetObject;
 
 describe('Test Service', () => {
   const bannedId = '1183908355372273665';
@@ -17,12 +18,14 @@ describe('Test Service', () => {
   before(async () => GuestSession.createSession());
 
   describe('.getTweetsForSubject', () => {
-    it('returns tweetObjects of subject and reply tweet to test with', async () => {
+    it('returns TweetObjects of subject and reply tweet to test with', async () => {
       const { testedWith, subject } = await TestService.getTweetsForSubject(bannedId);
-      bannedTestTweetId = testedWith.id_str;
+      expect(subject).to.be.instanceof(TweetObject);
+      expect(testedWith).to.be.instanceof(TweetObject);
+      bannedTestTweetId = testedWith.tweetId;
 
-      const { error: testedWithError } = tweetObject.validate(testedWith);
-      const { error: subjectError } = tweetObject.validate(subject);
+      const { error: testedWithError } = tweetObjectJoiSchema.validate(testedWith);
+      const { error: subjectError } = tweetObjectJoiSchema.validate(subject);
       expect(testedWithError).to.be.undefined;
       expect(subjectError).to.be.undefined;
     });

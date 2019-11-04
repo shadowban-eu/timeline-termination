@@ -1,6 +1,7 @@
+const Joi = require('@hapi/joi');
 const { Schema } = require('mongoose');
 
-const TweetObjectSchema = new Schema({
+const mongoSchema = new Schema({
   tweetId: String,
   userId: String,
   createdAt: Date,
@@ -10,6 +11,18 @@ const TweetObjectSchema = new Schema({
   favoriteCount: Number,
   replyCount: Number,
   retweetCount: Number,
+});
+
+const joiSchema = Joi.object({
+  tweetId: Joi.string(),
+  userId: Joi.string(),
+  createdAt: Joi.date(),
+  lang: Joi.string(),
+  fullText: Joi.string(),
+  possiblySensitive: Joi.bool(),
+  favoriteCount: Joi.number(),
+  replyCount: Joi.number(),
+  retweetCount: Joi.number()
 });
 
 const TweetObject = function TweetObject({
@@ -35,4 +48,5 @@ const TweetObject = function TweetObject({
 };
 
 module.exports = TweetObject;
-module.exports.TweetObjectSchema = TweetObjectSchema;
+module.exports.joiSchema = joiSchema;
+module.exports.mongoSchema = mongoSchema;

@@ -10,7 +10,7 @@ module.exports.single = async (req, res) => {
     },
     terminated: false
   });
-  testCase.terminated = await TestService.test(subject.id_str, testedWith.id_str);
+  testCase.terminated = await TestService.test(subject.tweetId, testedWith.tweetId);
   await testCase.save();
   res.json(testCase.toJSON());
 };
