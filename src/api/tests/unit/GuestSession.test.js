@@ -33,7 +33,7 @@ describe('GuestSession Service', () => {
     it('instanciates a new guest session and adds it to .pool', async function testcreateSession() {
       this.timeout(5000);
       await GuestSession.createSession();
-      expect(GuestSession.pool).to.have.a.lengthOf(1);
+      expect(GuestSession.pool).to.have.lengthOf.above(0);
       expect(GuestSession.pool[0]).to.be.instanceof(GuestSession);
     });
   });

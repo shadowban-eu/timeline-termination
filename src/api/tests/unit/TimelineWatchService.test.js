@@ -7,7 +7,7 @@ const TimelineWatchService = require('../../services/TimelineWatchService');
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
 
-describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
+describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   this.timeout(10000);
 
   before(async () => {
