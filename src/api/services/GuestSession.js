@@ -1,6 +1,8 @@
 const axios = require('axios');
 const { twitterGuestBearer } = require('../../config/vars');
 
+const DataConversion = require('../utils/DataConversion');
+
 const GuestSession = function GuestSession() {
   this.axiosInstance = axios.create({
     headers: {
@@ -55,6 +57,48 @@ GuestSession.prototype.getUserId = async function getUserId(screenName) {
     }
   );
   return res.data.data.user.rest_id;
+};
+
+
+GuestSession.prototype.getUserTimeline = async function getUserTimeline(userId, cursor) {
+  const res = await this.axiosInstance.get(
+    `https://api.twitter.com/2/timeline/profile/${userId}.json`,
+    {
+      params: {
+        include_profile_interstitial_type: 1,
+        include_blocking: 1,
+        include_blocked_by: 1,
+        include_followed_by: 1,
+        include_want_retweets: 1,
+        include_mute_edge: 1,
+        include_can_dm: 1,
+        include_can_media_tag: 1,
+        skip_status: 1,
+        cards_platform: 'Web-12',
+        include_cards: 1,
+        include_composer_source: true,
+        include_ext_alt_text: true,
+        include_reply_count: 1,
+        tweet_mode: 'extended',
+        include_entities: true,
+        include_user_entities: true,
+        include_ext_media_color: true,
+        include_ext_media_availability: true,
+        send_error_codes: true,
+        include_tweet_replies: false,
+        userId,
+        count: 20,
+        cursor,
+        ext: 'mediaStats,highlightedLabel,cameraMoment',
+        simple_quoted_tweet: true,
+
+      }
+    }
+  );
+  return {
+    tweets: res.data.globalObjects.tweets,
+    cursor: DataConversion.getCursorFromTimeline(res.data.timeline)
+  };
 };
 
 GuestSession.prototype.getTimeline = async function getTimeline(tweetId) {

@@ -30,7 +30,8 @@ describe.only('GuestSession Service', () => {
   });
 
   describe('.createSession', () => {
-    it('instanciates a new guest session and adds it to .pool', async () => {
+    it('instanciates a new guest session and adds it to .pool', async function testcreateSession() {
+      this.timeout(5000);
       await GuestSession.createSession();
       expect(GuestSession.pool).to.have.a.lengthOf(1);
       expect(GuestSession.pool[0]).to.be.instanceof(GuestSession);
@@ -86,15 +87,35 @@ describe.only('GuestSession Service', () => {
     });
   });
 
-  describe.only('#getUserId', () => {
+  describe('#getUserId', () => {
     it('returns the user_id for given screen_name', async () => {
       const userId = await session.getUserId('realdonaldtrump');
       expect(userId).to.eql('25073877');
     });
   });
 
-  // describe('#getUserTimeline', () => {
-  //   let timeline;
-  //   const userId =
-  // });
+  describe('#getUserTimeline', function testGetUserTimeline() {
+    const userId = '25073877';
+    let _cursor;
+    let firstPage;
+    this.timeout(5000);
+
+    it('returns 20 tweetObjects and a cursor', async () => {
+      firstPage = await session.getUserTimeline(userId);
+      const { tweets, cursor } = firstPage;
+
+      expect(tweets).to.be.an('object');
+      _cursor = cursor;
+      expect(_cursor).to.be.a('string');
+    });
+
+    it('uses the cursor parameter', async () => {
+      const { tweets, cursor } = await session.getUserTimeline(userId, _cursor);
+      const firstPageIds = Object.keys(firstPage.tweets).sort();
+      const secondPageIds = Object.keys(tweets).sort();
+
+      expect(firstPageIds).not.to.eql(secondPageIds);
+      expect(cursor).not.to.eql(_cursor);
+    });
+  });
 });
