@@ -15,5 +15,8 @@ module.exports = {
       process.env.MONGO_URI
   },
   logs: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
-  twitterGuestBearer: process.env.TWITTER_GUEST_BEARER
+  twitterGuestBearer: process.env.TWITTER_GUEST_BEARER,
+  userWatch: {
+    pollingInterval: (process.env.USER_WATCH_POLLING_INTERVAL || 60 * 60) * 1000
+  }
 };

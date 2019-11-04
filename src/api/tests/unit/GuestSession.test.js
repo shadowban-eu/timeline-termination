@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const GuestSession = require('../../services/GuestSession');
 const { twitterGuestBearer } = require('../../../config/vars');
 
-describe.only('GuestSession Service', () => {
+describe('GuestSession Service', () => {
   let session;
   let guestToken;
   before(() => {
