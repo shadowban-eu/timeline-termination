@@ -42,6 +42,21 @@ GuestSession.prototype.setGuestToken = function setGuestToken(guestToken) {
   this.axiosInstance.defaults.headers.common['X-Guest-Token'] = this.guestToken;
 };
 
+GuestSession.prototype.getUserId = async function getUserId(screenName) {
+  const res = await this.axiosInstance.get(
+    'https://api.twitter.com/graphql/G6Lk7nZ6eEKd7LBBZw9MYw/UserByScreenName',
+    {
+      params: {
+        variables: {
+          screen_name: screenName,
+          withHighlightedLabel: true
+        }
+      }
+    }
+  );
+  return res.data.data.user.rest_id;
+};
+
 GuestSession.prototype.getTimeline = async function getTimeline(tweetId) {
   const res = await this.axiosInstance.get(
     `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`,

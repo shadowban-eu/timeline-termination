@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const GuestSession = require('../../services/GuestSession');
 const { twitterGuestBearer } = require('../../../config/vars');
 
-describe('GuestSession Service', () => {
+describe.only('GuestSession Service', () => {
   let session;
   let guestToken;
   before(() => {
@@ -85,4 +85,16 @@ describe('GuestSession Service', () => {
       expect(timeline.tweets).to.have.property(tweetId);
     });
   });
+
+  describe.only('#getUserId', () => {
+    it('returns the user_id for given screen_name', async () => {
+      const userId = await session.getUserId('realdonaldtrump');
+      expect(userId).to.eql('25073877');
+    });
+  });
+
+  // describe('#getUserTimeline', () => {
+  //   let timeline;
+  //   const userId =
+  // });
 });
