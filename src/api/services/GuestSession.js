@@ -51,10 +51,18 @@ GuestSession.createSession = async () => {
   GuestSession.pool.push(session);
 };
 
-GuestSession.getTimeline = (tweetId) => {
-  const sessionIdx = Math.floor(Math.random() * GuestSession.pool.length);
-  return GuestSession.pool[sessionIdx].getTimeline(tweetId);
+GuestSession.pickSession = () => {
+  if (GuestSession.pool.length === 0) {
+    throw new RangeError('GuestSession pool is empty. Create one with GuestSession.createSession!');
+  }
+  return Math.floor(Math.random() * GuestSession.pool.length);
 };
+
+GuestSession.getUserTimeline = userId =>
+  GuestSession.pool[GuestSession.pickSession()].getUserTimeline(userId);
+
+GuestSession.getTimeline = tweetId =>
+  GuestSession.pool[GuestSession.pickSession()].getTimeline(tweetId);
 
 GuestSession.prototype.getGuestToken = async function getGuestToken() {
   const res = await this.axiosInstance.post('https://api.twitter.com/1.1/guest/activate.json');
