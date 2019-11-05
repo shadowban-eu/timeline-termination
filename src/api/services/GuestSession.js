@@ -58,6 +58,9 @@ GuestSession.pickSession = () => {
   return Math.floor(Math.random() * GuestSession.pool.length);
 };
 
+GuestSession.getUserId = screenName =>
+  GuestSession.pool[GuestSession.pickSession()].getUserId(screenName);
+
 GuestSession.getUserTimeline = userId =>
   GuestSession.pool[GuestSession.pickSession()].getUserTimeline(userId);
 
