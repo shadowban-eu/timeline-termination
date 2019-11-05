@@ -28,7 +28,8 @@ exports.handler = handler;
  * If error is not an instanceOf APIError, convert it.
  * @public
  */
-exports.converter = (err, req, res) => {
+/* eslint-disable-next-line no-unused-vars */
+exports.converter = (err, req, res, next) => {
   let convertedError = err;
 
   if (err instanceof expressValidation.ValidationError) {
