@@ -3,10 +3,10 @@ const Joi = require('@hapi/joi');
 const { joiSchema: tweetObject } = require('../utils/TweetObject');
 
 module.exports = {
-  // GET /v1/test/:subjectId
+  // GET /v1/test/:tweetId
   root: {
     param: {
-      subjectId: Joi.string()
+      tweetId: Joi.string()
     }
   },
   rootResponse: Joi.object({

@@ -6,7 +6,7 @@ const { root } = require('../../validations/test.validation');
 const router = express.Router();
 
 router
-  .route('/:subjectId')
+  .route('/:tweetId')
   /**
    * @api {get} v1/test/:id Test a tweet for TimelineTermination
    * @apiDescription Test a tweet ID whether it's subject to timeline termination

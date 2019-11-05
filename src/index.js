@@ -9,6 +9,10 @@ const GuestSession = require('./api/services/GuestSession');
 
 
 const init = async () => {
+  if (process.env.INITIATED) {
+    return;
+  }
+  process.env.INITITATED = true;
   // open mongoose connection
   mongoose.connect();
 

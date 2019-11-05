@@ -2,7 +2,7 @@ const TestService = require('../services/TestService');
 const TestCase = require('../models/TestCase.model');
 
 module.exports.single = async (req, res) => {
-  const { testedWith, subject } = await TestService.getTweetsForSubject(req.params.subjectId);
+  const { testedWith, subject } = await TestService.getTweetsForSubject(req.params.tweetId);
   const testCase = new TestCase({
     tweets: {
       testedWith,
@@ -14,4 +14,3 @@ module.exports.single = async (req, res) => {
   await testCase.save();
   res.json(testCase.transform());
 };
-
