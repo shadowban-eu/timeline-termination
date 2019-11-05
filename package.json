@@ -37,7 +37,6 @@
     "docker:test": "docker-compose -f docker-compose.yml -f docker-compose.test.yml up --abort-on-container-exit"
   },
   "dependencies": {
-    "@hapi/joi": "^16.1.7",
     "axios": "^0.19.0",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.0",

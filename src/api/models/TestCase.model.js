@@ -23,7 +23,7 @@ testCaseSchema.method({
       terminated: this.terminated
     };
 
-    const tweetFields = Array.from(apiResponseSchema._ids._byKey).map(id => id[0]);
+    const tweetFields = apiResponseSchema._inner.children.map(field => field.key);
 
     tweetFields.forEach((field) => {
       transformed.tweets.subject[field] = this.tweets.subject[field];

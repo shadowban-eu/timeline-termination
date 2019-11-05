@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const { Schema } = require('mongoose');
 
 const mongoSchema = new Schema({

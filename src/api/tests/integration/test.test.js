@@ -18,7 +18,7 @@ describe('Test API', () => {
         .expect(httpStatus.OK)
         .then((res) => {
           const { error } = rootResponse.validate(res.body);
-          expect(error).to.be.undefined;
+          expect(error).to.be.null;
         }));
   });
 });
