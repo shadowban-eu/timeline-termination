@@ -43,8 +43,7 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     });
   });
 
-  describe('#pollTimeline', function testPollTimeline() {
-    this.timeout(5000);
+  describe('#pollTimeline', () => {
     it('queries user\'s profile and emits tweetObjects', (done) => {
       const userId = '25073877';
       const tws = new TimelineWatchService(userId);
