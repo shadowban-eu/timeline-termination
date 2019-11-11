@@ -6,8 +6,15 @@ const forEach = require('lodash.foreach');
 const TimelineWatchService = require('../../services/TimelineWatchService');
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
+const WatchedUser = require('../../models/WatchedUser.model');
 
-describe('TimelineWatch Service', function TimelineWatchServiceTest() {
+const testUser = {
+  userId: '25073877',
+  screenName: 'realDonaldTrump',
+  active: true
+};
+
+describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
   this.timeout(10000);
 
   before(async () => {
@@ -20,11 +27,25 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
         await GuestSession.createSession();
       }
     }
+    const user = new WatchedUser(testUser);
+    await user.save();
   });
+
+  after(() => WatchedUser.deleteMany({}));
 
   it('extends EventEmitter', () => {
     const tws = new TimelineWatchService();
     expect(tws).to.be.instanceof(EventEmitter);
+  });
+
+  describe('loadUser', () => {
+    it('loads the WatchedUser from database', async () => {
+      const { userId } = testUser;
+      const tws = new TimelineWatchService(userId);
+      await tws.loadUser();
+      expect(tws.user).to.be.instanceof(WatchedUser);
+      expect(tws.user).to.have.property('userId', userId);
+    });
   });
 
   describe('#emitNewTweets', () => {
@@ -45,7 +66,7 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
 
   describe('#pollTimeline', () => {
     it('queries user\'s profile and emits tweetObjects', (done) => {
-      const userId = '25073877';
+      const { userId } = testUser;
       const tws = new TimelineWatchService(userId);
 
       tws.on('new-tweets', (tweetObjects) => {
@@ -64,7 +85,7 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     let newTweetsFired = 0;
 
     it('starts polling the user\'s profile timeline', (done) => {
-      const userId = '25073877';
+      const { userId } = testUser;
       const tws = new TimelineWatchService(userId);
       tws.on('new-tweets', (tweetObjects) => {
         expect(tweetObjects).to.be.ok;
@@ -82,7 +103,7 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
 
   describe('#stop', () => {
     it('stops a running pollingInterval', () => {
-      const userId = '25073877';
+      const { userId } = testUser;
       const tws = new TimelineWatchService(userId);
       tws.start();
       expect(tws.pollingInterval).to.have.property('_destroyed', false);
