@@ -1,4 +1,3 @@
-const EventEmitter = require('events');
 const filter = require('lodash.filter');
 
 const GuestSession = require('./GuestSession');
@@ -6,9 +5,8 @@ const TweetObject = require('../utils/TweetObject');
 const WatchedUser = require('../models/WatchedUser.model');
 const { pollingInterval } = require('../../config/vars').userWatch;
 
-class TimelineWatchService extends EventEmitter {
+class TimelineWatchService {
   constructor(userId) {
-    super();
     this.userId = userId;
     this.user = null;
     this.seenIds = [];
@@ -17,10 +15,6 @@ class TimelineWatchService extends EventEmitter {
 
   async loadUser() {
     this.user = await WatchedUser.findOne({ userId: this.userId });
-  }
-
-  emitNewTweets(tweetObjects) {
-    this.emit('new-tweets', tweetObjects);
   }
 
   setSeenIds(tweetIds) {
@@ -51,7 +45,7 @@ class TimelineWatchService extends EventEmitter {
     const newTweets = filter(withoutRetweets, tweet => tweetIds.includes(tweet.id_str));
 
     this.setSeenIds(tweetIds);
-    this.emitNewTweets(newTweets.map(tweet => new TweetObject(tweet)));
+    return newTweets.map(tweet => new TweetObject(tweet));
   }
 }
 

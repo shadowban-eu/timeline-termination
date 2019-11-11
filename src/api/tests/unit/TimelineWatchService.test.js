@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-expressions */
-const EventEmitter = require('events');
 const { expect } = require('chai');
 const forEach = require('lodash.foreach');
 
@@ -33,11 +32,6 @@ describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
 
   after(() => WatchedUser.deleteMany({}));
 
-  it('extends EventEmitter', () => {
-    const tws = new TimelineWatchService();
-    expect(tws).to.be.instanceof(EventEmitter);
-  });
-
   describe('loadUser', () => {
     it('loads the WatchedUser from database', async () => {
       const { userId } = testUser;
@@ -48,56 +42,26 @@ describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
     });
   });
 
-  describe('#emitNewTweets', () => {
-    it('emits a `new-tweets` event', (done) => {
-      const emitObjects = [
-        { tweetId: '213213123' },
-        { tweetId: '9481274' },
-        { tweetId: '824726419' },
-      ];
-      const tws = new TimelineWatchService();
-      tws.on('new-tweets', (tweetObjects) => {
-        expect(tweetObjects).to.eql(emitObjects);
-        done();
-      });
-      tws.emitNewTweets(emitObjects);
-    });
-  });
-
   describe('#pollTimeline', () => {
-    it('queries user\'s profile and emits tweetObjects', (done) => {
+    it('queries user\'s profile and returns tweetObjects', async () => {
       const { userId } = testUser;
       const tws = new TimelineWatchService(userId);
 
-      tws.on('new-tweets', (tweetObjects) => {
-        forEach(tweetObjects, (tweet) => {
-          expect(tweet).to.be.instanceof(TweetObject);
-          expect(tweet.userId).to.be.eql(userId);
-        });
-        done();
+      const tweetObjects = await tws.pollTimeline();
+      forEach(tweetObjects, (tweet) => {
+        expect(tweet).to.be.instanceof(TweetObject);
+        expect(tweet.userId).to.be.eql(userId);
       });
-
-      tws.pollTimeline();
     });
   });
 
   describe('#start', () => {
-    let newTweetsFired = 0;
-
-    it('starts polling the user\'s profile timeline', (done) => {
+    it('starts polling the user\'s profile timeline', () => {
       const { userId } = testUser;
       const tws = new TimelineWatchService(userId);
-      tws.on('new-tweets', (tweetObjects) => {
-        expect(tweetObjects).to.be.ok;
-        newTweetsFired += 1;
-        if (newTweetsFired === 2) {
-          clearInterval(tws.pollingInterval);
-          done();
-        }
-      });
-
       tws.start();
       expect(tws.pollingInterval).to.have.property('_destroyed', false);
+      tws.stop();
     });
   });
 
