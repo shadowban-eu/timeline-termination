@@ -56,19 +56,27 @@ describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
   });
 
   describe('#start', () => {
+    const { userId } = testUser;
+    const tws = new TimelineWatchService(userId);
+
+    before(() => tws.loadUser());
+    after(tws.stop);
+
     it('starts polling the user\'s profile timeline', () => {
-      const { userId } = testUser;
-      const tws = new TimelineWatchService(userId);
       tws.start();
       expect(tws.pollingInterval).to.have.property('_destroyed', false);
-      tws.stop();
     });
+
+    it('uses the user\'s pollingTimeout value', () =>
+      expect(tws.pollingInterval).to.have.property('_idleTimeout', tws.user.pollingTimeout)
+    );
   });
 
   describe('#stop', () => {
-    it('stops a running pollingInterval', () => {
+    it('stops a running pollingInterval', async () => {
       const { userId } = testUser;
       const tws = new TimelineWatchService(userId);
+      await tws.loadUser();
       tws.start();
       expect(tws.pollingInterval).to.have.property('_destroyed', false);
       tws.stop();
