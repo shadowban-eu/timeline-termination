@@ -15,7 +15,9 @@ const suitesToRun = process.env.NODE_TEST_SUITE
   ? [process.env.NODE_TEST_SUITE]
   : ['unit', 'integration'];
 
-describe('TimelineTermination Test', () => {
+describe('TimelineTermination Test', function timelineTerminationTests() {
+  this.timeout(20000);
+
   before(init);
 
   suitesToRun.forEach(type =>
