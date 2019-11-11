@@ -17,6 +17,6 @@ module.exports = {
   logs: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
   twitterGuestBearer: process.env.TWITTER_GUEST_BEARER,
   userWatch: {
-    pollingInterval: (process.env.USER_WATCH_POLLING_INTERVAL || 60 * 60) * 1000
+    pollingTimeout: (process.env.USER_WATCH_POLLING_TIMEOUT || 60 * 60) * 1000
   }
 };

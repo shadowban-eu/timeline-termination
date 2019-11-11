@@ -3,7 +3,7 @@ const filter = require('lodash.filter');
 const GuestSession = require('./GuestSession');
 const TweetObject = require('../utils/TweetObject');
 const WatchedUser = require('../models/WatchedUser.model');
-const { pollingInterval } = require('../../config/vars').userWatch;
+const { pollingTimeout } = require('../../config/vars').userWatch;
 
 class TimelineWatchService {
   constructor(userId) {
@@ -27,7 +27,7 @@ class TimelineWatchService {
     }
     this.pollingInterval = setInterval(
       this.pollTimeline.bind(this),
-      pollingInterval
+      pollingTimeout
     );
   }
 

@@ -20,9 +20,9 @@ const watchedUserSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
-  pollingInterval: {
+  pollingTimeout: {
     type: Number,
-    default: userWatch.pollingInterval
+    default: userWatch.pollingTimeout
   },
   active: Boolean
 });
@@ -30,7 +30,7 @@ const watchedUserSchema = new mongoose.Schema({
 watchedUserSchema.method({
   transform() {
     const transformed = {};
-    const userFields = ['userId', 'screenName', 'active', 'pollingInterval'];
+    const userFields = ['userId', 'screenName', 'active', 'pollingTimeout'];
 
     userFields.forEach((field) => {
       transformed[field] = this[field];

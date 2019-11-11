@@ -6,7 +6,9 @@ const TweetObject = require('../../utils/TweetObject');
 
 const { joiSchema: tweetObjectJoiSchema } = TweetObject;
 
-describe('Test Service', () => {
+describe('Test Service', function testServiceTests() {
+  this.timeout(20000);
+
   const bannedId = '1183908355372273665';
   const notBannedId = '1189475608390242305'; // clean
   // const notBannedId = '1189574251394879489'; // first missing its children

@@ -9,7 +9,7 @@ module.exports = {
   postRootResponse: Joi.object({
     screenName: Joi.string().required(),
     userId: Joi.string().required(),
-    pollingInterval: Joi.number().required(),
+    pollingTimeout: Joi.number().required(),
     active: Joi.bool().required()
   })
 };
