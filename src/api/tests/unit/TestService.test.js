@@ -26,8 +26,8 @@ describe('Test Service', () => {
 
       const { error: testedWithError } = tweetObjectJoiSchema.validate(testedWith);
       const { error: subjectError } = tweetObjectJoiSchema.validate(subject);
-      expect(testedWithError).to.be.undefined;
-      expect(subjectError).to.be.undefined;
+      expect(testedWithError).to.be.null;
+      expect(subjectError).to.be.null;
     });
   });
 
