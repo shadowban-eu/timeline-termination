@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const GuestSession = require('../../services/GuestSession');
 const TestService = require('../../services/TestService');
 const TweetObject = require('../../utils/TweetObject');
+const TestCase = require('../../models/TestCase.model');
 
 const { joiSchema: tweetObjectJoiSchema } = TweetObject;
 
@@ -13,9 +14,6 @@ describe('Test Service', function testServiceTests() {
   const notBannedId = '1189475608390242305'; // clean
   // const notBannedId = '1189574251394879489'; // first missing its children
   const notBannedCommentId = '1189545551794233345'; // first missing its children
-  let notBannedTestTweetId;
-  let bannedTestTweetId;
-  let notBannedCommentTestId;
 
   before(async () => GuestSession.createSession());
 
@@ -24,7 +22,6 @@ describe('Test Service', function testServiceTests() {
       const { testedWith, subject } = await TestService.getTweetsForSubject(bannedId);
       expect(subject).to.be.instanceof(TweetObject);
       expect(testedWith).to.be.instanceof(TweetObject);
-      bannedTestTweetId = testedWith.tweetId;
 
       const { error: testedWithError } = tweetObjectJoiSchema.validate(testedWith);
       const { error: subjectError } = tweetObjectJoiSchema.validate(subject);
@@ -34,31 +31,28 @@ describe('Test Service', function testServiceTests() {
   });
 
   describe('.test', () => {
-    before(async () => {
-      const {
-        testedWith: notBannedTestTweet
-      } = await TestService.getTweetsForSubject(notBannedId);
-      const {
-        testedWith: notBannedCommentTest
-      } = await TestService.getTweetsForSubject(notBannedCommentId);
+    let testCase;
 
-      notBannedTestTweetId = notBannedTestTweet.tweetId;
-      notBannedCommentTestId = notBannedCommentTest.tweetId;
+    before(async () => {
+      testCase = await TestService.test(bannedId);
+    });
+
+    it('returns a TestCase', async () => {
+      expect(testCase).to.be.instanceof(TestCase);
     });
 
     it('returns true when tweet is banned ', async () => {
-      const banned = await TestService.test(bannedId, bannedTestTweetId);
-      expect(banned).to.eql(true);
+      expect(testCase.terminated).to.eql(true);
     });
 
     it('returns false when tweet is not banned ', async () => {
-      const banned = await TestService.test(notBannedId, notBannedTestTweetId);
-      expect(banned).to.eql(false);
+      const notBannedTestCase = await TestService.test(notBannedId);
+      expect(notBannedTestCase.terminated).to.eql(false);
     });
 
     it('returns false when a comment is not banned', async () => {
-      const notBanned = await TestService.test(notBannedCommentId, notBannedCommentTestId);
-      expect(notBanned).to.eql(false);
+      const notBannedTestCase = await TestService.test(notBannedCommentId);
+      expect(notBannedTestCase.terminated).to.eql(false);
     });
   });
 });

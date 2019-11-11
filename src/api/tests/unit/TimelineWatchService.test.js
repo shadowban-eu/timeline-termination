@@ -13,7 +13,7 @@ const testUser = {
   active: true
 };
 
-describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
+describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   this.timeout(10000);
 
   before(async () => {
