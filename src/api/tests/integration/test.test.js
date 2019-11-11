@@ -9,8 +9,6 @@ const { rootResponse } = require('../../validations/test.validation');
 const testId = '1183908355372273665';
 
 describe('Test API', () => {
-  before(app.init);
-
   describe('GET /v1/test/:tweetId', () => {
     it('returns test results', () =>
       request(app)

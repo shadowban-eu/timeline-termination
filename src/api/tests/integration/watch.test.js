@@ -7,9 +7,7 @@ const app = require('../../../index');
 const WatchedUser = require('../../models/WatchedUser.model');
 const { postRootResponse } = require('../../validations/watch.validation');
 
-describe.only('User Watch API', () => {
-  before(app.init);
-
+describe('User Watch API', () => {
   describe('POST /v1/watch', () => {
     before(() => WatchedUser.create({ screenName: 'dupTest', userId: '213' }));
     after(() => WatchedUser.deleteOne({ screenName: 'dupTest' }));
