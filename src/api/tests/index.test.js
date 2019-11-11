@@ -11,10 +11,14 @@ const getTestPaths = (dir = './') => {
     .map(filename => join(absoluteRoot, filename));
 };
 
+const suitesToRun = process.env.NODE_TEST_SUITE
+  ? [process.env.NODE_TEST_SUITE]
+  : ['unit', 'integration'];
+
 describe('TimelineTermination Test', () => {
   before(init);
 
-  ['unit', 'integration'].forEach(type =>
+  suitesToRun.forEach(type =>
     getTestPaths(type).forEach(path => require(path)) // eslint-disable-line
   );
 
