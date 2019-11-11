@@ -32,7 +32,7 @@ describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
 
   after(() => WatchedUser.deleteMany({}));
 
-  describe('loadUser', () => {
+  describe('#loadUser', () => {
     it('loads the WatchedUser from database', async () => {
       const { userId } = testUser;
       const tws = new TimelineWatchService(userId);
@@ -42,10 +42,29 @@ describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
     });
   });
 
+  describe('#setSeenIds', () => {
+    const { userId } = testUser;
+    const tws = new TimelineWatchService(userId);
+
+    before(() => tws.loadUser());
+
+    it('appends array of tweet ids to user\'s seenIds', async () => {
+      tws.user.seenIds = ['1', '2', '3'];
+      await tws.setSeenIds(['foo', 'bar']);
+      expect(tws.user.seenIds).to.eql(['1', '2', '3', 'foo', 'bar']);
+    });
+
+    it('saves the user', async () => {
+      const updated = await WatchedUser.findOne({ userId });
+      expect(updated.seenIds).to.eql(['1', '2', '3', 'foo', 'bar']);
+    });
+  });
+
   describe('#pollTimeline', () => {
     it('queries user\'s profile and returns tweetObjects', async () => {
       const { userId } = testUser;
       const tws = new TimelineWatchService(userId);
+      await tws.loadUser();
 
       const tweetObjects = await tws.pollTimeline();
       forEach(tweetObjects, (tweet) => {

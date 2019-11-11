@@ -17,7 +17,8 @@ class TimelineWatchService {
   }
 
   setSeenIds(tweetIds) {
-    this.seenIds = this.seenIds.concat(tweetIds);
+    this.user.seenIds = this.user.seenIds.concat(tweetIds);
+    return this.user.save();
   }
 
   start() {
@@ -38,7 +39,7 @@ class TimelineWatchService {
   async pollTimeline() {
     const { tweets } = await GuestSession.getUserTimeline(this.userId);
     const withoutRetweets = filter(tweets, { user_id_str: this.userId });
-    const tweetIds = filter(withoutRetweets, tweet => !this.seenIds.includes(tweet.id_str))
+    const tweetIds = filter(withoutRetweets, tweet => !this.user.seenIds.includes(tweet.id_str))
       .map(tweet => tweet.id_str)
       .sort();
     const newTweets = filter(withoutRetweets, tweet => tweetIds.includes(tweet.id_str));
