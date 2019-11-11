@@ -2,8 +2,12 @@ const GuestSession = require('./GuestSession');
 const TweetObject = require('../utils/TweetObject');
 const TestCase = require('../models/TestCase.model');
 
+const { debug } = require('../../config/logger');
+
 class TestService {
   static async getTweetsForSubject(subjectTweetId) {
+    debug(`Getting tweets for subject ${subjectTweetId}`);
+
     const timeline = await GuestSession.getTimeline(subjectTweetId);
     const tweetIds = Object.keys(timeline.tweets).sort();
 
@@ -20,6 +24,8 @@ class TestService {
   }
 
   static async test(subjectTweetId) {
+    debug(`Testing ${subjectTweetId}`);
+
     const { testedWith, subject } = await TestService.getTweetsForSubject(subjectTweetId);
     const testCase = new TestCase({
       tweets: {
@@ -30,7 +36,6 @@ class TestService {
     });
     const timeline = await GuestSession.getTimeline(testedWith.tweetId);
     testCase.terminated = !Object.keys(timeline.tweets).includes(subjectTweetId);
-    // await TestService.test(subject.tweetId, testedWith.tweetId);
     await testCase.save();
     return testCase;
   }
