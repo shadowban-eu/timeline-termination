@@ -79,7 +79,7 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     const tws = new TimelineWatchService(userId);
 
     before(() => tws.loadUser());
-    after(tws.stop);
+    after(() => tws.stop());
 
     it('starts polling the user\'s profile timeline', () => {
       tws.start();

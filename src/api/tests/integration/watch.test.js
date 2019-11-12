@@ -10,7 +10,7 @@ const { postRootResponse } = require('../../validations/watch.validation');
 describe('User Watch API', () => {
   describe('POST /v1/watch', () => {
     before(() => WatchedUser.create({ screenName: 'dupTest', userId: '213' }));
-    after(() => WatchedUser.deleteOne({ screenName: 'dupTest' }));
+    after(() => WatchedUser.deleteMany({}));
 
     it('requires a valid screenName', async () => {
       const noValueRes = await request(app)
@@ -38,8 +38,6 @@ describe('User Watch API', () => {
 
     it('adds a new Twitter user to be watched', async () => {
       const screenName = 'foo';
-      after(() => WatchedUser.deleteOne({ screenName }));
-
       const res = await request(app)
         .post('/v1/watch')
         .send({ screenName });
