@@ -17,11 +17,6 @@ class TimelineWatchService {
     this.pollingInterval = null;
   }
 
-  async loadUser() {
-    debug(`Loading ${userTag(this.user)}`);
-    this.user = await WatchedUser.findOne({ userId: this.user.userId });
-  }
-
   setSeenIds(tweetIds) {
     debug(`Updating seenIds for ${userTag(this.user)} with ${tweetIds}`);
     this.user.seenIds = this.user.seenIds.concat(tweetIds);

@@ -47,20 +47,10 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     expect(() => new TimelineWatchService(watchedUser)).not.to.throw();
   });
 
-  describe('#loadUser', () => {
-    it('loads the WatchedUser from database', async () => {
-      const tws = new TimelineWatchService(watchedUser);
-      await tws.loadUser();
-      expect(tws.user).to.be.instanceof(WatchedUser);
-      expect(tws.user).to.have.property('userId', watchedUser.userId);
-    });
-  });
-
   describe('#setSeenIds', () => {
     let tws;
     before(() => {
       tws = new TimelineWatchService(watchedUser);
-      return tws.loadUser();
     });
 
     it('appends array of tweet ids to user\'s seenIds', async () => {
@@ -78,7 +68,6 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   describe('#pollTimeline', () => {
     it('queries user\'s profile and returns tweetObjects', async () => {
       const tws = new TimelineWatchService(watchedUser);
-      await tws.loadUser();
 
       const tweetObjects = await tws.pollTimeline();
       forEach(tweetObjects, (tweet) => {
@@ -92,7 +81,6 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     let tws;
     before(() => {
       tws = new TimelineWatchService(watchedUser);
-      return tws.loadUser();
     });
     after(() => tws.stop());
 
@@ -109,7 +97,6 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   describe('#stop', () => {
     it('stops a running pollingInterval', async () => {
       const tws = new TimelineWatchService(watchedUser);
-      await tws.loadUser();
       tws.start();
       expect(tws.pollingInterval).to.have.property('_destroyed', false);
       tws.stop();
