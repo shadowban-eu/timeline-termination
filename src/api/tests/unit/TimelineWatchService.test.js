@@ -7,14 +7,15 @@ const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
 const WatchedUser = require('../../models/WatchedUser.model');
 
-const testUser = {
-  userId: '25073877',
-  screenName: 'realDonaldTrump',
-  active: true
-};
-
 describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   this.timeout(10000);
+
+  const testUser = {
+    userId: '25073877',
+    screenName: 'realDonaldTrump',
+    active: true
+  };
+  let watchedUser;
 
   before(async () => {
     try {
@@ -26,27 +27,41 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
         await GuestSession.createSession();
       }
     }
-    const user = new WatchedUser(testUser);
-    await user.save();
+    watchedUser = new WatchedUser(testUser);
+    await watchedUser.save();
   });
 
   after(() => WatchedUser.deleteMany({}));
 
+  it('throws a ReferenceError when constructed without WatchedUser', async () => {
+    const asObject = watchedUser.toJSON();
+
+    expect(() => new TimelineWatchService()).to.throw(
+      ReferenceError,
+      'First parameter must be a WatchedUser instance.'
+    );
+    expect(() => new TimelineWatchService(asObject)).to.throw(
+      ReferenceError,
+      'First parameter must be a WatchedUser instance.'
+    );
+    expect(() => new TimelineWatchService(watchedUser)).not.to.throw();
+  });
+
   describe('#loadUser', () => {
     it('loads the WatchedUser from database', async () => {
-      const { userId } = testUser;
-      const tws = new TimelineWatchService(userId);
+      const tws = new TimelineWatchService(watchedUser);
       await tws.loadUser();
       expect(tws.user).to.be.instanceof(WatchedUser);
-      expect(tws.user).to.have.property('userId', userId);
+      expect(tws.user).to.have.property('userId', watchedUser.userId);
     });
   });
 
   describe('#setSeenIds', () => {
-    const { userId } = testUser;
-    const tws = new TimelineWatchService(userId);
-
-    before(() => tws.loadUser());
+    let tws;
+    before(() => {
+      tws = new TimelineWatchService(watchedUser);
+      return tws.loadUser();
+    });
 
     it('appends array of tweet ids to user\'s seenIds', async () => {
       tws.user.seenIds = ['1', '2', '3'];
@@ -55,30 +70,30 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     });
 
     it('saves the user', async () => {
-      const updated = await WatchedUser.findOne({ userId });
+      const updated = await WatchedUser.findOne({ userId: watchedUser.userId });
       expect(updated.seenIds).to.eql(['1', '2', '3', 'foo', 'bar']);
     });
   });
 
   describe('#pollTimeline', () => {
     it('queries user\'s profile and returns tweetObjects', async () => {
-      const { userId } = testUser;
-      const tws = new TimelineWatchService(userId);
+      const tws = new TimelineWatchService(watchedUser);
       await tws.loadUser();
 
       const tweetObjects = await tws.pollTimeline();
       forEach(tweetObjects, (tweet) => {
         expect(tweet).to.be.instanceof(TweetObject);
-        expect(tweet.userId).to.be.eql(userId);
+        expect(tweet.userId).to.be.eql(watchedUser.userId);
       });
     });
   });
 
   describe('#start', () => {
-    const { userId } = testUser;
-    const tws = new TimelineWatchService(userId);
-
-    before(() => tws.loadUser());
+    let tws;
+    before(() => {
+      tws = new TimelineWatchService(watchedUser);
+      return tws.loadUser();
+    });
     after(() => tws.stop());
 
     it('starts polling the user\'s profile timeline', () => {
@@ -93,8 +108,7 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
 
   describe('#stop', () => {
     it('stops a running pollingInterval', async () => {
-      const { userId } = testUser;
-      const tws = new TimelineWatchService(userId);
+      const tws = new TimelineWatchService(watchedUser);
       await tws.loadUser();
       tws.start();
       expect(tws.pollingInterval).to.have.property('_destroyed', false);

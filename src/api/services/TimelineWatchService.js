@@ -9,16 +9,17 @@ const { debug } = require('../../config/logger');
 const userTag = user => (user ? `${user.screenName} (${user.userId})` : 'null (null)');
 
 class TimelineWatchService {
-  constructor(userId) {
-    this.userId = userId;
-    this.user = null;
-    this.seenIds = [];
+  constructor(user) {
+    if (!(user instanceof WatchedUser)) {
+      throw new ReferenceError('First parameter must be a WatchedUser instance.');
+    }
+    this.user = user;
     this.pollingInterval = null;
   }
 
   async loadUser() {
     debug(`Loading ${userTag(this.user)}`);
-    this.user = await WatchedUser.findOne({ userId: this.userId });
+    this.user = await WatchedUser.findOne({ userId: this.user.userId });
   }
 
   setSeenIds(tweetIds) {
@@ -46,8 +47,8 @@ class TimelineWatchService {
 
   async pollTimeline() {
     debug(`Polling timeline of ${userTag(this.user)}`);
-    const { tweets } = await GuestSession.getUserTimeline(this.userId);
-    const withoutRetweets = filter(tweets, { user_id_str: this.userId });
+    const { tweets } = await GuestSession.getUserTimeline(this.user.userId);
+    const withoutRetweets = filter(tweets, { user_id_str: this.user.userId });
     const tweetIds = filter(withoutRetweets, tweet => !this.user.seenIds.includes(tweet.id_str))
       .map(tweet => tweet.id_str)
       .sort();
@@ -57,5 +58,7 @@ class TimelineWatchService {
     return newTweets.map(tweet => new TweetObject(tweet));
   }
 }
+
+TimelineWatchService.watching = {};
 
 module.exports = TimelineWatchService;
