@@ -7,7 +7,7 @@ const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
 const WatchedUser = require('../../models/WatchedUser.model');
 
-describe('TimelineWatch Service', function TimelineWatchServiceTest() {
+describe.only('TimelineWatch Service', function TimelineWatchServiceTest() {
   this.timeout(10000);
 
   const testUser = {
@@ -101,6 +101,28 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
       expect(tws.pollingInterval).to.have.property('_destroyed', false);
       tws.stop();
       expect(tws.pollingInterval).to.be.null;
+    });
+  });
+
+  describe('.add', () => {
+    let addedService;
+    before(() => {
+      addedService = TimelineWatchService.add(watchedUser);
+    });
+
+    after(() => addedService.stop());
+
+    it('adds a WatchedUser to .watching', () => {
+      expect(TimelineWatchService.watching).to.have.property(watchedUser.userId);
+    });
+
+    it('returns created/added TimelineWatchService instance', () => {
+      expect(addedService).to.be.instanceof(TimelineWatchService);
+      expect(addedService.user).to.eql(watchedUser);
+    });
+
+    it('starts watching, if watchedUser.active is true', () => {
+      expect(addedService.pollingInterval).to.have.property('_destroyed', false);
     });
   });
 });

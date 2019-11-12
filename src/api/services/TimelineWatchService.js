@@ -52,6 +52,15 @@ class TimelineWatchService {
     this.setSeenIds(tweetIds);
     return newTweets.map(tweet => new TweetObject(tweet));
   }
+
+  static add(watchedUser) {
+    const watchService = new TimelineWatchService(watchedUser);
+    if (watchedUser.active) {
+      watchService.start();
+    }
+    TimelineWatchService.watching[watchedUser.userId] = watchService;
+    return watchService;
+  }
 }
 
 TimelineWatchService.watching = {};
