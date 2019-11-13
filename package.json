@@ -7,17 +7,13 @@
   "private": true,
   "license": "GPL-3.0-or-later",
   "engines": {
-    "node": ">=8",
-    "yarn": "*"
+    "node": ">=8"
   },
   "scripts": {
-    "precommit": "yarn lint",
-    "prestart": "yarn docs",
     "start": "cross-env NODE_ENV=production pm2 start ./src/index.js",
     "dev": "nodemon ./src/index.js",
-    "lint": "eslint ./src/ --ignore-path .gitignore --ignore-pattern internals/scripts",
-    "lint:fix": "yarn lint --fix",
-    "lint:watch": "yarn lint --watch",
+    "lint": "eslint ./src/ --ignore-path .gitignore",
+    "lint:fix": "npm run lint --fix",
     "test": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text mocha --timeout 20000 src/api/tests/index.test.js",
     "test:unit": "cross-env NODE_ENV=test NODE_TEST_SUITE=unit mocha src/api/tests/index.test.js",
     "test:unit:watch": "nodemon --exec npm run test:unit",
@@ -78,5 +74,10 @@
     "sinon": "^7.5.0",
     "sinon-chai": "^3.0.0",
     "supertest": "^4.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run validate"
+    }
   }
 }
