@@ -22,7 +22,7 @@ const watchedUserSchema = new mongoose.Schema({
   },
   pollingTimeout: {
     type: Number,
-    default: userWatch.pollingTimeout * 1000
+    default: userWatch.pollingTimeout
   },
   active: Boolean
 });
