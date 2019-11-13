@@ -10,10 +10,14 @@ const { getRootResponse, postRootResponse } = require('../../validations/watch.v
 
 describe('User Watch API', () => {
   let getTestWatchedUser;
+  let dupTestWatchedUser;
+  let postTestWatchedUser;
   before(async () => {
-    await WatchedUser.create({ screenName: 'dupTest', userId: '213' });
-    getTestWatchedUser = new WatchedUser({ screenName: 'getTest', userId: '312' });
-    await getTestWatchedUser.save();
+    const dbUsers = await WatchedUser.create(
+      { screenName: 'dupTest', userId: '213' },
+      { screenName: 'getTest', userId: '312' }
+    );
+    [dupTestWatchedUser, getTestWatchedUser] = dbUsers;
   });
 
   after(() => WatchedUser.deleteMany({}));
@@ -64,7 +68,7 @@ describe('User Watch API', () => {
     });
 
     it('adds a new Twitter user to be watched', async () => {
-      const screenName = 'foo';
+      const screenName = 'realdonaldtrump';
       const res = await request(app)
         .post('/v1/watch')
         .send({ screenName });
@@ -72,11 +76,17 @@ describe('User Watch API', () => {
       expect(res.body).to.have.property('watchedUser');
       const { error } = postRootResponse.validate(res.body.watchedUser);
       expect(error).to.be.null;
+      postTestWatchedUser = res.body.watchedUser;
+    });
+
+    it('starts a TimelineWatchService for new user', async () => {
+      const tws = TimelineWatchService.watching[postTestWatchedUser.userId];
+      expect(tws.user.transform()).to.eql(postTestWatchedUser);
+      tws.stop();
     });
 
     it('returns an error when user already exists', async () => {
-      const screenName = 'dupTest';
-
+      const { screenName } = dupTestWatchedUser;
       const res = await request(app)
         .post('/v1/watch')
         .send({ screenName })

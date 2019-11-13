@@ -16,6 +16,9 @@ module.exports.add = async (req, res, next) => {
       active: true
     });
     await watchedUser.save();
+
+    TimelineWatchService.add(watchedUser);
+
     return res.json({
       watchedUser: watchedUser.transform()
     });
