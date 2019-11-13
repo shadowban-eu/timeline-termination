@@ -40,7 +40,9 @@ describe('TimelineTermination Test', function timelineTerminationTests() {
   this.timeout(20000);
 
   before(function beforeAllDescribes() {
-    checkOnlyWhenValidating(this);
+    if (process.env.VALIDATING) {
+      checkOnlyWhenValidating(this);
+    }
     return init();
   });
 
