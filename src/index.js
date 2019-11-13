@@ -6,6 +6,8 @@ const app = require('./config/express');
 const mongoose = require('./config/mongoose');
 
 const GuestSession = require('./api/services/GuestSession');
+const TimelineWatchService = require('./api/services/TimelineWatchService');
+const WatchedUser = require('./api/models/WatchedUser.model');
 
 let dbConnection;
 let serverInstance;
@@ -33,7 +35,18 @@ const init = async () => {
   // open mongoose connection
   dbConnection = await mongoose.connect();
 
+  // acquire Twitter guest sessions for requests
   await initGuestSessions();
+
+  // load watchedUsers and start polling
+  const watchedUsers = await WatchedUser.find({ active: true });
+  watchedUsers.forEach((user) => {
+    const watchService = new TimelineWatchService(user);
+    watchService.start();
+    TimelineWatchService.watching[user.userId] = watchService;
+  });
+
+  logger.info(`Watching ${Object.keys(TimelineWatchService.watching).length} user's timelines.`);
 
   // listen to requests
   serverInstance = app.listen(port, () => logger.info(`server started on port ${port} (${env})`));
