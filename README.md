@@ -66,7 +66,7 @@ npm run test:watch
 npm run coverage
 ```
 
-## Validate
+## Validate - runs at pre-commit
 
 ```bash
 # run lint and tests
@@ -87,7 +87,7 @@ pm2 logs
 npm run docs
 ```
 
-## Docker
+## Docker (might not work, yet)
 
 ```bash
 # run container locally
@@ -98,24 +98,4 @@ npm run docker:prod
 
 # run tests
 npm run docker:test
-```
-
-## Deploy
-
-Set your server ip:
-
-```bash
-DEPLOY_SERVER=127.0.0.1
-```
-
-Replace my Docker username with yours:
-
-```bash
-nano deploy.sh
-```
-
-Run deploy script:
-
-```bash
-npm run deploy
 ```
