@@ -12,7 +12,8 @@ module.exports = {
   mongo: {
     uri: process.env.NODE_ENV === 'test' ?
       process.env.MONGO_URI_TESTS :
-      process.env.MONGO_URI
+      process.env.MONGO_URI,
+    retries: process.env.MONGO_RETRIES || 3
   },
   logs: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
   twitterGuestBearer: process.env.TWITTER_GUEST_BEARER,
