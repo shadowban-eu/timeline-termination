@@ -22,7 +22,8 @@ exports.connect = () => new Promise((resolve) => {
   const connectWithRetry = () => mongoose.connect(mongo.uri, {
     keepAlive: 1,
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useCreateIndex: true
   }, (err) => {
     if (err) {
       if (attempt === mongo.retries) {
