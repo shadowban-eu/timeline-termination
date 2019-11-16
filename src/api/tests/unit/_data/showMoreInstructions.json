@@ -1,0 +1,43 @@
+[
+  {
+    "addEntries": {
+      "entries": [
+        {
+          "entryId": "tweet-1192199021307166720",
+          "sortIndex": "8031173015547609087",
+          "content": {
+            "item": {
+              "content": {
+                "tweet": {
+                  "id": "1192199021307166720",
+                  "displayType": "Tweet",
+                  "hasModeratedReplies": false
+                }
+              }
+            }
+          }
+        },
+        {
+          "entryId": "cursor-showMoreThreads-8031173015547609086",
+          "sortIndex": "8031173015547609086",
+          "content": {
+            "operation": {
+              "cursor": {
+                "value": "LBkGJQQRAAA=",
+                "cursorType": "ShowMoreThreads",
+                "displayTreatment": {
+                  "actionText": "Show more replies"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "terminateTimeline": {
+      "direction": "Top"
+    }
+  }
+]
