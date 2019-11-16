@@ -1,0 +1,82 @@
+[
+  {
+    "addEntries": {
+      "entries": [
+        {
+          "entryId": "label-8031173015547609082",
+          "sortIndex": "8031173015547609082",
+          "content": {
+            "item": {
+              "content": {
+                "label": {
+                  "text": "More replies",
+                  "displayType": "InlineHeader"
+                }
+              }
+            }
+          }
+        },
+        {
+          "entryId": "conversationThread-1192199734410256390",
+          "sortIndex": "8031173015547609077",
+          "content": {
+            "timelineModule": {
+              "items": [
+                {
+                  "entryId": "tweet-1192199734410256390",
+                  "item": {
+                    "content": {
+                      "tweet": {
+                        "id": "1192199734410256390",
+                        "displayType": "Tweet"
+                      }
+                    },
+                    "clientEventInfo": {
+                      "details": {
+                        "timelinesDetails": {
+                          "controllerData": "DAACDAAEDAABCgABAAAAIAAUoAUAAAAA"
+                        },
+                        "conversationDetails": {
+                          "conversationSection": "LowQuality"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "displayType": "VerticalConversation",
+              "clientEventInfo": {
+                "details": {
+                  "conversationDetails": {
+                    "conversationSection": "LowQuality"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "entryId": "cursor-showMoreThreadsPrompt-8031173015547609076",
+          "sortIndex": "8031173015547609076",
+          "content": {
+            "operation": {
+              "cursor": {
+                "value": "LBkWjIC17fDVxYshJQYRAAA=",
+                "cursorType": "ShowMoreThreadsPrompt",
+                "displayTreatment": {
+                  "actionText": "Show",
+                  "labelText": "Show additional replies, including those that may contain offensive content"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "terminateTimeline": {
+      "direction": "Top"
+    }
+  }
+]
