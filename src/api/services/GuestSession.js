@@ -115,16 +115,29 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline(userId, 
 };
 
 GuestSession.prototype.getTimeline = async function getTimeline(tweetId) {
-  const res = await this.axiosInstance.get(
-    `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`,
-    {
-      params: timelineParams
+  const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
+
+  let res = await this.axiosInstance.get(url, { params: timelineParams });
+  let { instructions } = res.data.timeline;
+  let { tweets } = res.data.globalObjects;
+  const tweetCount = Object.keys(tweets).length;
+  if (tweetCount <= 1) {
+    const showMore = DataConversion.getShowMoreCursor(instructions);
+    if (showMore) {
+      res = await this.axiosInstance.get(url, {
+        params: {
+          ...timelineParams,
+          cursor: showMore.cursor
+        }
+      });
+      instructions = res.data.timeline.instructions; // eslint-disable-line
+      tweets = res.data.globalObjects.tweets; // eslint-disable-line
     }
-  );
+  }
   return {
     id: tweetId,
-    instructions: res.data.timeline.instructions,
-    tweets: res.data.globalObjects.tweets
+    instructions,
+    tweets
   };
 };
 

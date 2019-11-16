@@ -72,9 +72,12 @@ describe('GuestSession Service', () => {
 
   describe('#getTimeline', () => {
     let timeline;
+    let barrierOnlyTimeline;
     const tweetId = '1183908355372273665';
+    const barrierOnlyTweetId = '1192199021307166720';
     before(async () => {
       timeline = await session.getTimeline(tweetId);
+      barrierOnlyTimeline = await session.getTimeline(barrierOnlyTweetId);
     });
     it('returns instructions for tweetId parameter', async () => {
       expect(timeline).to.have.property('id', tweetId);
@@ -84,6 +87,12 @@ describe('GuestSession Service', () => {
     it('returns tweets for tweetId parameter', async () => {
       expect(timeline).to.have.property('tweets');
       expect(timeline.tweets).to.have.property(tweetId);
+      expect(Object.keys(timeline.tweets)).to.have.lengthOf.above(1);
+    });
+    it('follows barrier if otherwise no tweets exist', () => {
+      expect(barrierOnlyTimeline).to.have.property('id', barrierOnlyTweetId);
+      expect(barrierOnlyTimeline.tweets).to.have.property(barrierOnlyTweetId);
+      expect(Object.keys(barrierOnlyTimeline.tweets)).to.have.lengthOf.above(1);
     });
   });
 
