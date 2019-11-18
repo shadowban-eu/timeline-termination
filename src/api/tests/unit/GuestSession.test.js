@@ -1,9 +1,11 @@
 /* eslint-disable no-unused-expressions */
-const { expect } = require('chai');
+const chai = require('chai').use(require('chai-as-promised'));
 const sinon = require('sinon');
 
 const GuestSession = require('../../services/GuestSession');
 const { twitterGuestBearer } = require('../../../config/vars');
+
+const { expect } = chai;
 
 describe('GuestSession Service', () => {
   let session;
@@ -27,22 +29,6 @@ describe('GuestSession Service', () => {
   it('instanciates with an axios instance, using the guestBearer token', () => {
     expect(session.axiosInstance.defaults.headers.common.Authorization)
       .to.eql(`Bearer ${twitterGuestBearer}`);
-  });
-
-  describe('#get', () => {
-    it('is a wrapper for instance\'s axios.get', async () => {
-      const spy = sinon.spy(session.axiosInstance, 'get');
-      await session.get('https://twitter.com', { params: { foo: 'bar' } });
-      expect(spy.calledWith('https://twitter.com', { params: { foo: 'bar' } }));
-    });
-
-    it('tracks x-rate-limit-remaining and -reset values', async () => {
-      const res = await session.get(
-        'https://api.twitter.com/2/timeline/profile/25073877.json'
-      );
-      expect(session.rateLimitRemaining).to.eql(res.headers['x-rate-limit-remaining']);
-      expect(session.rateLimitReset).to.eql(res.headers['x-rate-limit-reset']);
-    });
   });
 
   describe('.createSession', () => {
@@ -97,10 +83,52 @@ describe('GuestSession Service', () => {
     after(() => sinon.restore());
   });
 
+  describe('.getUserId', () => {
+    let spy;
+    before(() => {
+      spy = sinon.spy(GuestSession.pool[0], 'getUserId');
+    });
+
+    it('calls #getUserId on a GuestSession from .pool for tweetId parameter', async () => {
+      const screenName = 'realdonaldtrump';
+      GuestSession.getUserId(screenName);
+      expect(spy.calledWith(screenName));
+    });
+
+    after(() => sinon.restore());
+  });
+
+  describe('#get', () => {
+    it('is a wrapper for instance\'s axios.get', async () => {
+      const spy = sinon.spy(session.axiosInstance, 'get');
+      await session.get('https://twitter.com', { params: { foo: 'bar' } });
+      expect(spy.calledWith('https://twitter.com', { params: { foo: 'bar' } }));
+    });
+
+    it('tracks x-rate-limit-remaining and -reset values', async () => {
+      const res = await session.get(
+        'https://api.twitter.com/2/timeline/profile/25073877.json'
+      );
+      expect(session.rateLimitRemaining).to.eql(res.headers['x-rate-limit-remaining']);
+      expect(session.rateLimitReset).to.eql(res.headers['x-rate-limit-reset']);
+    });
+  });
+
   describe('#getGuestToken', () => {
     it('returns a twitter guest token', async () => {
       guestToken = await session.getGuestToken();
       expect(guestToken).not.to.be.undefined;
+    });
+
+    it('throws when no token was received', async () => {
+      const axiosPostStub = sinon.stub(session.axiosInstance, 'post').callsFake(() => ({
+        data: { error: 'foo' }
+      }));
+
+      await expect(session.getGuestToken())
+        .to.be.rejectedWith(Error, 'Failed to get guestToken');
+
+      axiosPostStub.restore();
     });
   });
 
