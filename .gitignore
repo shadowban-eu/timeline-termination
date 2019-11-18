@@ -54,3 +54,4 @@ node_modules
 .env
 .env.*
 .ht*
+!.env.example
