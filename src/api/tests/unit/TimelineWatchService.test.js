@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-expressions */
 const { expect } = require('chai');
 const forEach = require('lodash.foreach');
+const sinon = require('sinon');
 
 const TimelineWatchService = require('../../services/TimelineWatchService');
 const GuestSession = require('../../services/GuestSession');
@@ -79,10 +80,16 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
 
   describe('#start', () => {
     let tws;
+    let stopSpy;
+
     before(() => {
       tws = new TimelineWatchService(watchedUser);
+      stopSpy = sinon.spy(tws, 'stop');
     });
-    after(() => tws.stop());
+    after(() => {
+      sinon.restore();
+      tws.stop();
+    });
 
     it('starts polling the user\'s profile timeline', () => {
       tws.start();
@@ -92,6 +99,11 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     it('uses the user\'s pollingTimeout value', () =>
       expect(tws.pollingInterval).to.have.property('_idleTimeout', tws.user.pollingTimeout)
     );
+
+    it('stops/replaces a running polling Timer', () => {
+      tws.start();
+      expect(stopSpy.called).to.be.true;
+    });
   });
 
   describe('#stop', () => {
