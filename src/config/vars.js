@@ -19,5 +19,6 @@ module.exports = {
   twitterGuestBearer: process.env.TWITTER_GUEST_BEARER,
   userWatch: {
     pollingTimeout: (process.env.USER_WATCH_POLLING_TIMEOUT || 60 * 60) * 1000
-  }
+  },
+  guestSessions: process.env.GUEST_SESSIONS || 10
 };
