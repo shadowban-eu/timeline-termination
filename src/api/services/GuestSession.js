@@ -70,8 +70,11 @@ GuestSession.getUserTimeline = userId =>
 GuestSession.getTimeline = tweetId =>
   GuestSession.pool[GuestSession.pickSession()].getTimeline(tweetId);
 
-GuestSession.prototype.get = function get(url, options) {
-  return this.axiosInstance.get(url, options);
+GuestSession.prototype.get = async function get(url, options) {
+  const res = await this.axiosInstance.get(url, options);
+  this.rateLimitRemaining = res.headers['x-rate-limit-remaining'];
+  this.rateLimitReset = res.headers['x-rate-limit-reset'];
+  return res;
 };
 
 GuestSession.prototype.getGuestToken = async function getGuestToken() {
@@ -102,7 +105,6 @@ GuestSession.prototype.getUserId = async function getUserId(screenName) {
   );
   return res.data.data.user.rest_id;
 };
-
 
 GuestSession.prototype.getUserTimeline = async function getUserTimeline(userId, cursor) {
   const res = await this.axiosInstance.get(

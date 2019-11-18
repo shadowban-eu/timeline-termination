@@ -9,9 +9,9 @@ describe.only('GuestSession Service', () => {
   let session;
   let rateLimitSession;
   let guestToken;
-  before(() => {
-    session = new GuestSession();
-    rateLimitSession = new GuestSession();
+  before(async () => {
+    session = await GuestSession.createSession();
+    rateLimitSession = await GuestSession.createSession();
   });
 
   it('uses guestBearer token from .env', () =>
@@ -33,9 +33,17 @@ describe.only('GuestSession Service', () => {
 
   describe.only('#get', () => {
     it('is a wrapper for instance\'s axios.get', async () => {
-      const spy = sinon.spy(rateLimitSession.axiosInstance, 'get');
-      await rateLimitSession.get('https://twitter.com', { params: { foo: 'bar' } });
+      const spy = sinon.spy(session.axiosInstance, 'get');
+      await session.get('https://twitter.com', { params: { foo: 'bar' } });
       expect(spy.calledWith('https://twitter.com', { params: { foo: 'bar' } }));
+    });
+
+    it('tracks x-rate-limit-remaining and -reset values', async () => {
+      const res = await session.get(
+        'https://api.twitter.com/2/timeline/profile/25073877.json'
+      );
+      expect(session.rateLimitRemaining).to.eql(res.headers['x-rate-limit-remaining']);
+      expect(session.rateLimitReset).to.eql(res.headers['x-rate-limit-reset']);
     });
   });
 
