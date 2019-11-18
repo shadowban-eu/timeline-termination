@@ -51,6 +51,7 @@ GuestSession.createSession = async () => {
   const session = new GuestSession();
   session.setGuestToken(await session.getGuestToken());
   GuestSession.pool.push(session);
+  return session;
 };
 
 GuestSession.pickSession = () => {
