@@ -11,12 +11,20 @@ const WatchedUser = require('../../models/WatchedUser.model');
 describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   this.timeout(10000);
 
-  const testUser = {
+  let watchedUser;
+  const watchedUserData = {
     userId: '25073877',
     screenName: 'realDonaldTrump',
     active: true
   };
-  let watchedUser;
+
+  let notActiveWatchedUser;
+  const notActiveWatchedUserData = {
+    userId: '12301',
+    screenName: 'definitelyNotValid',
+    active: false
+  };
+
 
   before(async () => {
     try {
@@ -28,8 +36,10 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
         await GuestSession.createSession();
       }
     }
-    watchedUser = new WatchedUser(testUser);
+    watchedUser = new WatchedUser(watchedUserData);
+    notActiveWatchedUser = new WatchedUser(notActiveWatchedUserData);
     await watchedUser.save();
+    await notActiveWatchedUser.save();
   });
 
   after(() => WatchedUser.deleteMany({}));
@@ -135,6 +145,11 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
 
     it('starts watching, if watchedUser.active is true', () => {
       expect(addedService.pollingInterval).to.have.property('_destroyed', false);
+    });
+
+    it('does not start watching, if watchedUser.active is false', () => {
+      const tws = TimelineWatchService.add(notActiveWatchedUser);
+      expect(tws.pollingInterval).to.be.null;
     });
   });
 });
