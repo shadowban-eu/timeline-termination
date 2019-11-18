@@ -39,6 +39,8 @@ const GuestSession = function GuestSession() {
     withCredentials: true
   });
   this.guestToken = null;
+  this.rateLimitRemaining = null;
+  this.rateLimitReset = null;
 };
 
 GuestSession.UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36';
@@ -66,6 +68,10 @@ GuestSession.getUserTimeline = userId =>
 
 GuestSession.getTimeline = tweetId =>
   GuestSession.pool[GuestSession.pickSession()].getTimeline(tweetId);
+
+GuestSession.prototype.get = function get(url, options) {
+  return this.axiosInstance.get(url, options);
+};
 
 GuestSession.prototype.getGuestToken = async function getGuestToken() {
   const res = await this.axiosInstance.post('https://api.twitter.com/1.1/guest/activate.json');

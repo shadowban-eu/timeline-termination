@@ -5,11 +5,13 @@ const sinon = require('sinon');
 const GuestSession = require('../../services/GuestSession');
 const { twitterGuestBearer } = require('../../../config/vars');
 
-describe('GuestSession Service', () => {
+describe.only('GuestSession Service', () => {
   let session;
+  let rateLimitSession;
   let guestToken;
   before(() => {
     session = new GuestSession();
+    rateLimitSession = new GuestSession();
   });
 
   it('uses guestBearer token from .env', () =>
@@ -27,6 +29,14 @@ describe('GuestSession Service', () => {
   it('instanciates with an axios instance, using the guestBearer token', () => {
     expect(session.axiosInstance.defaults.headers.common.Authorization)
       .to.eql(`Bearer ${twitterGuestBearer}`);
+  });
+
+  describe.only('#get', () => {
+    it('is a wrapper for instance\'s axios.get', async () => {
+      const spy = sinon.spy(rateLimitSession.axiosInstance, 'get');
+      await rateLimitSession.get('https://twitter.com', { params: { foo: 'bar' } });
+      expect(spy.calledWith('https://twitter.com', { params: { foo: 'bar' } }));
+    });
   });
 
   describe('.createSession', () => {
