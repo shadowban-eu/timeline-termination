@@ -59,6 +59,17 @@ describe('GuestSession Service', () => {
   });
 
   describe('.pickSession', () => {
+    it('throws, if no session is in the pool', () => {
+      const sessions = Array.from(GuestSession.pool);
+      GuestSession.pool = [];
+
+      expect(() => GuestSession.pickSession()).to.throw(
+        RangeError,
+        'GuestSession pool is empty. Create one with GuestSession.createSession!'
+      );
+
+      GuestSession.pool = Array.from(sessions);
+    });
     it('returns a session that is not rate limited', () => {
       const newSession = new GuestSession();
       newSession.rateLimitRemaining = 0;
