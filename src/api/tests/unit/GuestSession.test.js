@@ -5,13 +5,11 @@ const sinon = require('sinon');
 const GuestSession = require('../../services/GuestSession');
 const { twitterGuestBearer } = require('../../../config/vars');
 
-describe.only('GuestSession Service', () => {
+describe('GuestSession Service', () => {
   let session;
-  let rateLimitSession;
   let guestToken;
   before(async () => {
     session = await GuestSession.createSession();
-    rateLimitSession = await GuestSession.createSession();
   });
 
   it('uses guestBearer token from .env', () =>
@@ -31,7 +29,7 @@ describe.only('GuestSession Service', () => {
       .to.eql(`Bearer ${twitterGuestBearer}`);
   });
 
-  describe.only('#get', () => {
+  describe('#get', () => {
     it('is a wrapper for instance\'s axios.get', async () => {
       const spy = sinon.spy(session.axiosInstance, 'get');
       await session.get('https://twitter.com', { params: { foo: 'bar' } });
@@ -53,10 +51,23 @@ describe.only('GuestSession Service', () => {
       this.timeout(5000);
       newSession = await GuestSession.createSession();
       expect(GuestSession.pool).to.have.lengthOf.above(0);
-      expect(GuestSession.pool[0]).to.be.instanceof(GuestSession);
+      expect(GuestSession.pool[GuestSession.pool.length - 1]).to.be.instanceof(GuestSession);
     });
     it('returns the new session', () => {
       expect(newSession).to.be.instanceof(GuestSession);
+    });
+  });
+
+  describe('.pickSession', () => {
+    it('returns a session that is not rate limited', () => {
+      const newSession = new GuestSession();
+      newSession.rateLimitRemaining = 0;
+      GuestSession.pool.unshift(newSession);
+
+      const picked = GuestSession.pickSession();
+      expect(picked.rateLimitRemaining).not.to.eql(0);
+
+      GuestSession.pool.shift();
     });
   });
 

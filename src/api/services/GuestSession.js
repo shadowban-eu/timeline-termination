@@ -58,17 +58,19 @@ GuestSession.pickSession = () => {
   if (GuestSession.pool.length === 0) {
     throw new RangeError('GuestSession pool is empty. Create one with GuestSession.createSession!');
   }
-  return Math.floor(Math.random() * GuestSession.pool.length);
+  return GuestSession.pool.find(
+    session => session.rateLimitRemaining > 0 || session.rateLimitRemaining === null
+  );
 };
 
 GuestSession.getUserId = screenName =>
-  GuestSession.pool[GuestSession.pickSession()].getUserId(screenName);
+  GuestSession.pickSession().getUserId(screenName);
 
 GuestSession.getUserTimeline = userId =>
-  GuestSession.pool[GuestSession.pickSession()].getUserTimeline(userId);
+  GuestSession.pickSession().getUserTimeline(userId);
 
 GuestSession.getTimeline = tweetId =>
-  GuestSession.pool[GuestSession.pickSession()].getTimeline(tweetId);
+  GuestSession.pickSession().getTimeline(tweetId);
 
 GuestSession.prototype.get = async function get(url, options) {
   const res = await this.axiosInstance.get(url, options);
