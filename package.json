@@ -12,6 +12,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production pm2 start ./src/index.js",
     "dev": "nodemon ./src/index.js",
+    "debug": "cross-env node --inspect-brk ./src/index.js",
     "lint": "eslint ./src/ --ignore-path .gitignore",
     "lint:fix": "npm run lint --fix",
     "test": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text mocha --timeout 20000 src/api/tests/index.test.js",
