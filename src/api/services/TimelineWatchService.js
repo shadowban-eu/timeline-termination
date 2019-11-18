@@ -14,7 +14,7 @@ class TimelineWatchService {
       throw new ReferenceError('First parameter must be a WatchedUser instance.');
     }
     this.user = user;
-    this.pollingInterval = null;
+    this.pollingTimeout = null;
   }
 
   setSeenIds(tweetIds) {
@@ -25,10 +25,10 @@ class TimelineWatchService {
 
   start() {
     debug(`Starting to watch ${userTag(this.user)}`);
-    if (this.pollingInterval) {
+    if (this.pollingTimeout) {
       this.stop();
     }
-    this.pollingInterval = setInterval(
+    this.pollingTimeout = setInterval(
       this.pollTimeline.bind(this),
       this.user.pollingTimeout
     );
@@ -36,8 +36,8 @@ class TimelineWatchService {
 
   stop() {
     debug(`Stopping to watch ${userTag(this.user)}`);
-    clearInterval(this.pollingInterval);
-    this.pollingInterval = null;
+    clearInterval(this.pollingTimeout);
+    this.pollingTimeout = null;
   }
 
   async pollTimeline() {

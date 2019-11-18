@@ -103,11 +103,11 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
 
     it('starts polling the user\'s profile timeline', () => {
       tws.start();
-      expect(tws.pollingInterval).to.have.property('_destroyed', false);
+      expect(tws.pollingTimeout).to.have.property('_destroyed', false);
     });
 
     it('uses the user\'s pollingTimeout value', () =>
-      expect(tws.pollingInterval).to.have.property('_idleTimeout', tws.user.pollingTimeout)
+      expect(tws.pollingTimeout).to.have.property('_idleTimeout', tws.user.pollingTimeout)
     );
 
     it('stops/replaces a running polling Timer', () => {
@@ -117,12 +117,12 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   });
 
   describe('#stop', () => {
-    it('stops a running pollingInterval', async () => {
+    it('stops a running pollingTimeout', async () => {
       const tws = new TimelineWatchService(watchedUser);
       tws.start();
-      expect(tws.pollingInterval).to.have.property('_destroyed', false);
+      expect(tws.pollingTimeout).to.have.property('_destroyed', false);
       tws.stop();
-      expect(tws.pollingInterval).to.be.null;
+      expect(tws.pollingTimeout).to.be.null;
     });
   });
 
@@ -144,12 +144,12 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     });
 
     it('starts watching, if watchedUser.active is true', () => {
-      expect(addedService.pollingInterval).to.have.property('_destroyed', false);
+      expect(addedService.pollingTimeout).to.have.property('_destroyed', false);
     });
 
     it('does not start watching, if watchedUser.active is false', () => {
       const tws = TimelineWatchService.add(notActiveWatchedUser);
-      expect(tws.pollingInterval).to.be.null;
+      expect(tws.pollingTimeout).to.be.null;
     });
   });
 });
