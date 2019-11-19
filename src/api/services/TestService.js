@@ -34,7 +34,7 @@ class TestService {
       },
       terminated: false
     });
-    const timeline = await GuestSession.getTimeline(testedWith.tweetId);
+    const timeline = await GuestSession.getTimeline(testedWith.tweetId, true);
     testCase.terminated = !Object.keys(timeline.tweets).includes(subjectTweetId);
     await testCase.save();
     return testCase;

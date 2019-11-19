@@ -69,8 +69,8 @@ GuestSession.getUserId = screenName =>
 GuestSession.getUserTimeline = userId =>
   GuestSession.pickSession().getUserTimeline(userId);
 
-GuestSession.getTimeline = tweetId =>
-  GuestSession.pickSession().getTimeline(tweetId);
+GuestSession.getTimeline = (tweetId, noReplyCheck = false) =>
+  GuestSession.pickSession().getTimeline(tweetId, noReplyCheck);
 
 GuestSession.prototype.get = async function get(url, options) {
   const res = await this.axiosInstance.get(url, options);
@@ -125,13 +125,19 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline(userId, 
   };
 };
 
-GuestSession.prototype.getTimeline = async function getTimeline(tweetId) {
+// eslint-disable-next-line
+GuestSession.prototype.getTimeline = async function getTimeline(tweetId, noReplyCheck = false) {
   const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
 
   let res = await this.axiosInstance.get(url, { params: timelineParams });
   let { instructions } = res.data.timeline;
   let { tweets } = res.data.globalObjects;
   const tweetCount = Object.keys(tweets).length;
+
+  if (!noReplyCheck && tweets[tweetId].reply_count === 0) {
+    throw new RangeError(`Tweet ${tweetId} has no replies.`);
+  }
+
   if (tweetCount <= 1) {
     const showMore = DataConversion.getShowMoreCursor(instructions);
     if (showMore) {

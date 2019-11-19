@@ -147,6 +147,8 @@ describe('GuestSession Service', () => {
     let barrierOnlyTimeline;
     const tweetId = '1183908355372273665';
     const barrierOnlyTweetId = '1192199021307166720';
+    const noRepliesTweetId = '1192338232886906880';
+
     before(async () => {
       timeline = await session.getTimeline(tweetId);
       barrierOnlyTimeline = await session.getTimeline(barrierOnlyTweetId);
@@ -165,6 +167,17 @@ describe('GuestSession Service', () => {
       expect(barrierOnlyTimeline).to.have.property('id', barrierOnlyTweetId);
       expect(barrierOnlyTimeline.tweets).to.have.property(barrierOnlyTweetId);
       expect(Object.keys(barrierOnlyTimeline.tweets)).to.have.lengthOf.above(1);
+    });
+    it('throws a RangeError when tweet has no replies', async () => {
+      let caught = false;
+      try {
+        await session.getTimeline(noRepliesTweetId);
+      } catch (err) {
+        caught = true;
+        expect(err).to.be.instanceof(RangeError);
+        expect(err).to.have.property('message', `Tweet ${noRepliesTweetId} has no replies.`);
+      }
+      expect(caught).to.be.true;
     });
   });
 
