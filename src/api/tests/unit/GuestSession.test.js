@@ -188,10 +188,14 @@ describe('GuestSession Service', () => {
     });
   });
 
-  describe('#getUserTimeline', function testGetUserTimeline() {
+  describe.only('#getUserTimeline', function testGetUserTimeline() {
     const userId = '25073877';
     let _cursor;
     let firstPage;
+    let getSpy;
+    before(() => {
+      getSpy = sinon.spy(session, 'get');
+    });
     this.timeout(5000);
 
     it('returns 20 tweetObjects and a cursor', async () => {
@@ -210,6 +214,10 @@ describe('GuestSession Service', () => {
 
       expect(firstPageIds).not.to.eql(secondPageIds);
       expect(cursor).not.to.eql(_cursor);
+    });
+
+    it('uses session\'s .get wrapper',() => {
+      expect(getSpy.called).to.be.true;
     });
   });
 });

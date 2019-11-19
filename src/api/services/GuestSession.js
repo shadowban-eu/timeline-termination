@@ -109,7 +109,7 @@ GuestSession.prototype.getUserId = async function getUserId(screenName) {
 };
 
 GuestSession.prototype.getUserTimeline = async function getUserTimeline(userId, cursor) {
-  const res = await this.axiosInstance.get(
+  const res = await this.get(
     `https://api.twitter.com/2/timeline/profile/${userId}.json`,
     {
       params: Object.assign({}, timelineParams, {
