@@ -45,21 +45,27 @@ describe('GuestSession Service', () => {
   });
 
   describe('.pickSession', () => {
-    it('throws, if no session is in the pool', () => {
-      const sessions = Array.from(GuestSession.pool);
-      GuestSession.pool = [];
+    const sandbox = sinon.createSandbox();
 
+    before(() => {
+      sandbox.stub(GuestSession, 'pool').value([]);
+    });
+
+    after(() => sandbox.restore());
+
+    it('throws, if no session is in the pool', () => {
       expect(() => GuestSession.pickSession()).to.throw(
         RangeError,
         'GuestSession pool is empty. Create one with GuestSession.createSession!'
       );
-
-      GuestSession.pool = Array.from(sessions);
     });
+
     it('returns a session that is not rate limited', () => {
-      const newSession = new GuestSession();
-      newSession.rateLimitRemaining = 0;
-      GuestSession.pool.unshift(newSession);
+      const okSession = new GuestSession();
+      const limitedSession = new GuestSession();
+      limitedSession.rateLimitRemaining = 0;
+      GuestSession.pool.unshift(okSession);
+      GuestSession.pool.unshift(limitedSession);
 
       const picked = GuestSession.pickSession();
       expect(picked.rateLimitRemaining).not.to.eql(0);
@@ -69,18 +75,19 @@ describe('GuestSession Service', () => {
   });
 
   describe('.getTimeline', async () => {
-    let spy;
-    before(() => {
-      spy = sinon.spy(GuestSession.pool[0], 'getTimeline');
+    let getTimelineSpy;
+    before(async () => {
+      sandbox.stub(GuestSession, 'pool').value([]);
+      await GuestSession.createSession();
+      getTimelineSpy = sandbox.spy(GuestSession.pool[0], 'getTimeline');
     });
+    after(() => sandbox.restore());
 
     it('calls #getTimeline on a GuestSession from .pool for tweetId parameter', async () => {
       const tweetId = '1183908355372273665';
       GuestSession.getTimeline(tweetId);
-      expect(spy.calledWith(tweetId));
+      expect(getTimelineSpy.calledWith(tweetId));
     });
-
-    after(() => sinon.restore());
   });
 
   describe('.getUserId', () => {
