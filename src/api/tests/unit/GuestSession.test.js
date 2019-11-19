@@ -6,6 +6,7 @@ const GuestSession = require('../../services/GuestSession');
 const { twitterGuestBearer } = require('../../../config/vars');
 
 const { expect } = chai;
+const sandbox = sinon.createSandbox();
 
 describe('GuestSession Service', () => {
   let session;
@@ -45,32 +46,33 @@ describe('GuestSession Service', () => {
   });
 
   describe('.pickSession', () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(GuestSession, 'pool').value([]);
-    });
-
+    before(() => sandbox.stub(GuestSession, 'pool').value([]));
     after(() => sandbox.restore());
 
-    it('throws, if no session is in the pool', () => {
-      expect(() => GuestSession.pickSession()).to.throw(
+    it('throws, if no session is in the pool', async () => {
+      await expect(GuestSession.pickSession()).to.be.rejectedWith(
         RangeError,
         'GuestSession pool is empty. Create one with GuestSession.createSession!'
       );
     });
 
-    it('returns a session that is not rate limited', () => {
-      const okSession = new GuestSession();
+    it('returns a session that is not rate limited', async () => {
       const limitedSession = new GuestSession();
       limitedSession.rateLimitRemaining = 0;
-      GuestSession.pool.unshift(okSession);
       GuestSession.pool.unshift(limitedSession);
 
-      const picked = GuestSession.pickSession();
+      const picked = await GuestSession.pickSession();
       expect(picked.rateLimitRemaining).not.to.eql(0);
+      GuestSession.pool.pop(); // remove usable session for next test
+    });
 
-      GuestSession.pool.shift();
+    it('creates and returns a new session, when all in pool are rate-limited', async () => {
+      const createSessionSpy = sandbox.spy(GuestSession, 'createSession');
+      const createdSession = await GuestSession.pickSession();
+
+      expect(createdSession).to.be.instanceof(GuestSession);
+      expect(createdSession.rateLimitRemaining).to.be.null;
+      expect(createSessionSpy.called).to.be.true;
     });
   });
 
@@ -91,18 +93,19 @@ describe('GuestSession Service', () => {
   });
 
   describe('.getUserId', () => {
-    let spy;
-    before(() => {
-      spy = sinon.spy(GuestSession.pool[0], 'getUserId');
+    let getUserIdSpy;
+    before(async () => {
+      sandbox.stub(GuestSession, 'pool').value([]);
+      await GuestSession.createSession();
+      getUserIdSpy = sandbox.spy(GuestSession.pool[0], 'getUserId');
     });
+    after(() => sandbox.restore());
 
     it('calls #getUserId on a GuestSession from .pool for tweetId parameter', async () => {
       const screenName = 'realdonaldtrump';
       GuestSession.getUserId(screenName);
-      expect(spy.calledWith(screenName));
+      expect(getUserIdSpy.calledWith(screenName));
     });
-
-    after(() => sinon.restore());
   });
 
   describe('#get', () => {
@@ -110,6 +113,7 @@ describe('GuestSession Service', () => {
       const spy = sinon.spy(session.axiosInstance, 'get');
       await session.get('https://twitter.com', { params: { foo: 'bar' } });
       expect(spy.calledWith('https://twitter.com', { params: { foo: 'bar' } }));
+      spy.restore();
     });
 
     it('tracks x-rate-limit-remaining and -reset values', async () => {
@@ -195,7 +199,7 @@ describe('GuestSession Service', () => {
     });
   });
 
-  describe.only('#getUserTimeline', function testGetUserTimeline() {
+  describe('#getUserTimeline', function testGetUserTimeline() {
     const userId = '25073877';
     let _cursor;
     let firstPage;
