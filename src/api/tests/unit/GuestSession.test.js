@@ -46,14 +46,16 @@ describe('GuestSession Service', () => {
   });
 
   describe('.pickSession', () => {
-    before(() => sandbox.stub(GuestSession, 'pool').value([]));
-    after(() => sandbox.restore());
+    beforeEach(() => sandbox.stub(GuestSession, 'pool').value([]));
+    afterEach(() => sandbox.restore());
 
-    it('throws, if no session is in the pool', async () => {
-      await expect(GuestSession.pickSession()).to.be.rejectedWith(
-        RangeError,
-        'GuestSession pool is empty. Create one with GuestSession.createSession!'
-      );
+    it('returns a newly created session, if pool is empty', async () => {
+      const createSessionSpy = sandbox.spy(GuestSession, 'createSession');
+      const createdSession = await GuestSession.pickSession();
+
+      expect(createdSession).to.be.instanceof(GuestSession);
+      expect(createdSession.rateLimitRemaining).to.be.null;
+      expect(createSessionSpy.called).to.be.true;
     });
 
     it('returns a session that is not rate limited', async () => {
@@ -227,7 +229,7 @@ describe('GuestSession Service', () => {
       expect(cursor).not.to.eql(_cursor);
     });
 
-    it('uses session\'s .get wrapper',() => {
+    it('uses session\'s .get wrapper', () => {
       expect(getSpy.called).to.be.true;
     });
   });

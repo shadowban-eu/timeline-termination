@@ -55,10 +55,7 @@ GuestSession.createSession = async () => {
 };
 
 GuestSession.pickSession = async () => {
-  if (GuestSession.pool.length === 0) {
-    throw new RangeError('GuestSession pool is empty. Create one with GuestSession.createSession!');
-  }
-  const availableSession = GuestSession.pool.find(
+  const availableSession = GuestSession.pool.length && GuestSession.pool.find(
     session => session.rateLimitRemaining > 0 || session.rateLimitRemaining === null
   );
   return availableSession || GuestSession.createSession();
