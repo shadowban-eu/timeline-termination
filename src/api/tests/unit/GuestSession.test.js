@@ -45,7 +45,7 @@ describe('GuestSession Service', () => {
     });
   });
 
-  describe('.pickSession', () => {
+  describe.only('.pickSession', () => {
     beforeEach(() => sandbox.stub(GuestSession, 'pool').value([]));
     afterEach(() => sandbox.restore());
 
@@ -54,17 +54,19 @@ describe('GuestSession Service', () => {
       const createdSession = await GuestSession.pickSession();
 
       expect(createdSession).to.be.instanceof(GuestSession);
-      expect(createdSession.rateLimitRemaining).to.be.null;
+      expect(createdSession.exhausted).to.eql(false);
       expect(createSessionSpy.called).to.be.true;
     });
 
     it('returns a session that is not rate limited', async () => {
       const limitedSession = new GuestSession();
-      limitedSession.rateLimitRemaining = 0;
+      limitedSession.exhausted = true;
       GuestSession.pool.unshift(limitedSession);
 
       const picked = await GuestSession.pickSession();
-      expect(picked.rateLimitRemaining).not.to.eql(0);
+
+      expect(GuestSession.pool).to.have.length(2);
+      expect(picked.exhausted).not.to.eql(true);
       GuestSession.pool.pop(); // remove usable session for next test
     });
 
@@ -73,7 +75,7 @@ describe('GuestSession Service', () => {
       const createdSession = await GuestSession.pickSession();
 
       expect(createdSession).to.be.instanceof(GuestSession);
-      expect(createdSession.rateLimitRemaining).to.be.null;
+      expect(createdSession.exhausted).to.eql(false);
       expect(createSessionSpy.called).to.be.true;
     });
   });
@@ -112,7 +114,7 @@ describe('GuestSession Service', () => {
 
   describe('#get', () => {
     it('is a wrapper for instance\'s axios.get', async () => {
-      const spy = sinon.spy(session.axiosInstance, 'get');
+      const spy = sandbox.spy(session.axiosInstance, 'get');
       await session.get('https://twitter.com', { params: { foo: 'bar' } });
       expect(spy.calledWith('https://twitter.com', { params: { foo: 'bar' } }));
       spy.restore();
@@ -124,6 +126,21 @@ describe('GuestSession Service', () => {
       );
       expect(session.rateLimitRemaining).to.eql(res.headers['x-rate-limit-remaining']);
       expect(session.rateLimitReset).to.eql(res.headers['x-rate-limit-reset']);
+    });
+
+    it('sets the #exhausted flag, when #rateLimitRemaining becomes 0', async () => {
+      const stub = sandbox.stub(session.axiosInstance, 'get').callsFake(async () => ({
+        headers: {
+          'x-rate-limit-remaining': 0
+        }
+      }));
+      expect(session).to.have.property('exhausted', false);
+
+      await session.get('https://foo.com');
+
+      expect(session).to.have.property('exhausted', true);
+      expect(session.rateLimitRemaining).to.eql(0);
+      stub.restore();
     });
   });
 

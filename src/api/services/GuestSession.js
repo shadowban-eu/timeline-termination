@@ -41,6 +41,7 @@ const GuestSession = function GuestSession() {
   this.guestToken = null;
   this.rateLimitRemaining = null;
   this.rateLimitReset = null;
+  this.exhausted = false;
 };
 
 GuestSession.UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36';
@@ -56,7 +57,7 @@ GuestSession.createSession = async () => {
 
 GuestSession.pickSession = async () => {
   const availableSession = GuestSession.pool.length && GuestSession.pool.find(
-    session => session.rateLimitRemaining > 0 || session.rateLimitRemaining === null
+    session => !session.exhausted
   );
   return availableSession || GuestSession.createSession();
 };
@@ -74,6 +75,10 @@ GuestSession.prototype.get = async function get(url, options) {
   const res = await this.axiosInstance.get(url, options);
   this.rateLimitRemaining = res.headers['x-rate-limit-remaining'];
   this.rateLimitReset = res.headers['x-rate-limit-reset'];
+
+  if (this.rateLimitRemaining === 0) {
+    this.exhausted = true;
+  }
   return res;
 };
 
