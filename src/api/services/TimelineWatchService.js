@@ -4,7 +4,7 @@ const GuestSession = require('./GuestSession');
 const TweetObject = require('../utils/TweetObject');
 const WatchedUser = require('../models/WatchedUser.model');
 
-const { debug } = require('../../config/logger');
+const { debug, info } = require('../../config/logger');
 
 const userTag = user => (user ? `${user.screenName} (${user.userId})` : 'null (null)');
 
@@ -41,7 +41,7 @@ class TimelineWatchService {
   }
 
   async pollTimeline() {
-    debug(`Polling timeline of ${userTag(this.user)}`);
+    info(`Polling timeline of ${userTag(this.user)}`);
     const { tweets } = await GuestSession.getUserTimeline(this.user.userId);
     const withoutRetweets = filter(tweets, { user_id_str: this.user.userId });
     const tweetIds = filter(withoutRetweets, tweet => !this.user.seenIds.includes(tweet.id_str))

@@ -45,7 +45,7 @@ describe('GuestSession Service', () => {
     });
   });
 
-  describe.only('.pickSession', () => {
+  describe('.pickSession', () => {
     beforeEach(() => sandbox.stub(GuestSession, 'pool').value([]));
     afterEach(() => sandbox.restore());
 
