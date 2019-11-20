@@ -114,11 +114,12 @@ describe('GuestSession Service', () => {
   });
 
   describe('#get', () => {
+    afterEach(() => sandbox.restore());
+
     it('is a wrapper for instance\'s axios.get', async () => {
       const spy = sandbox.spy(session.axiosInstance, 'get');
       await session.get('https://twitter.com', { params: { foo: 'bar' } });
       expect(spy.calledWith('https://twitter.com', { params: { foo: 'bar' } }));
-      spy.restore();
     });
 
     it('tracks x-rate-limit-remaining and -reset values', async () => {
@@ -134,7 +135,7 @@ describe('GuestSession Service', () => {
     });
 
     it('sets the #exhausted flag, when #rateLimitRemaining becomes 0', async () => {
-      const stub = sandbox.stub(session.axiosInstance, 'get').callsFake(async () => ({
+      sandbox.stub(session.axiosInstance, 'get').callsFake(async () => ({
         headers: {
           'x-rate-limit-remaining': '0'
         }
@@ -145,7 +146,19 @@ describe('GuestSession Service', () => {
 
       expect(session).to.have.property('exhausted', true);
       expect(session.rateLimitRemaining).to.eql(0);
-      stub.restore();
+    });
+
+    it('calls .pickSession and replays request on 429 errors', async () => {
+      const pickSpy = sandbox.spy(GuestSession, 'pickSession');
+      const getStub = sandbox.stub(session.axiosInstance, 'get').callsFake(async () => {
+        const err = new Error();
+        err.status = 429;
+        throw err;
+      });
+
+      await session.get('https://twitter.com');
+      expect(getStub.called).to.be.true;
+      expect(pickSpy.called).to.be.true;
     });
   });
 

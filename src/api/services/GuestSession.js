@@ -72,14 +72,21 @@ GuestSession.getTimeline = async (tweetId, noReplyCheck = false) =>
   (await GuestSession.pickSession()).getTimeline(tweetId, noReplyCheck);
 
 GuestSession.prototype.get = async function get(url, options) {
-  const res = await this.axiosInstance.get(url, options);
-  this.rateLimitRemaining = parseInt(res.headers['x-rate-limit-remaining'], 10);
-  this.rateLimitReset = parseInt(res.headers['x-rate-limit-reset'], 10);
+  try {
+    const res = await this.axiosInstance.get(url, options);
+    this.rateLimitRemaining = parseInt(res.headers['x-rate-limit-remaining'], 10);
+    this.rateLimitReset = parseInt(res.headers['x-rate-limit-reset'], 10);
 
-  if (this.rateLimitRemaining === 0) {
-    this.exhausted = true;
+    if (this.rateLimitRemaining === 0) {
+      this.exhausted = true;
+    }
+    return res;
+  } catch (err) {
+    if (err.status === 429) {
+      return (await GuestSession.pickSession()).get(url, options);
+    }
+    throw err;
   }
-  return res;
 };
 
 GuestSession.prototype.getGuestToken = async function getGuestToken() {
