@@ -8,17 +8,17 @@ require('dotenv-safe').load({
 
 module.exports = {
   env: process.env.NODE_ENV,
-  port: process.env.PORT,
+  port: process.env.TTB_PORT,
   mongo: {
     uri: process.env.NODE_ENV === 'test' ?
-      process.env.MONGO_URI_TESTS :
-      process.env.MONGO_URI,
-    retries: process.env.MONGO_RETRIES || 3
+      process.env.TTB_MONGO_URI_TESTS :
+      process.env.TTB_MONGO_URI,
+    retries: process.env.TTB_MONGO_RETRIES || 3
   },
   logs: process.env.NODE_ENV === 'production' ? 'combined' : 'dev',
-  twitterGuestBearer: process.env.TWITTER_GUEST_BEARER,
+  twitterGuestBearer: process.env.TTB_TWITTER_GUEST_BEARER,
   userWatch: {
-    pollingTimeout: (process.env.USER_WATCH_POLLING_TIMEOUT || 60 * 60) * 1000
+    pollingTimeout: (process.env.TTB_USER_WATCH_POLLING_TIMEOUT || 60 * 60) * 1000
   },
-  guestSessions: process.env.GUEST_SESSIONS || 10
+  guestSessions: process.env.TTB_GUEST_SESSIONS || 10
 };
