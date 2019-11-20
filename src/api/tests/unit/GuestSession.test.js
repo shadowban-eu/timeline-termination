@@ -125,14 +125,18 @@ describe('GuestSession Service', () => {
       const res = await session.get(
         'https://api.twitter.com/2/timeline/profile/25073877.json'
       );
-      expect(session.rateLimitRemaining).to.eql(res.headers['x-rate-limit-remaining']);
-      expect(session.rateLimitReset).to.eql(res.headers['x-rate-limit-reset']);
+      const parsed = {
+        remaining: parseInt(res.headers['x-rate-limit-remaining'], 10),
+        reset: parseInt(res.headers['x-rate-limit-reset'], 10)
+      };
+      expect(session.rateLimitRemaining).to.eql(parsed.remaining);
+      expect(session.rateLimitReset).to.eql(parsed.reset);
     });
 
     it('sets the #exhausted flag, when #rateLimitRemaining becomes 0', async () => {
       const stub = sandbox.stub(session.axiosInstance, 'get').callsFake(async () => ({
         headers: {
-          'x-rate-limit-remaining': 0
+          'x-rate-limit-remaining': '0'
         }
       }));
       expect(session).to.have.property('exhausted', false);

@@ -73,8 +73,8 @@ GuestSession.getTimeline = async (tweetId, noReplyCheck = false) =>
 
 GuestSession.prototype.get = async function get(url, options) {
   const res = await this.axiosInstance.get(url, options);
-  this.rateLimitRemaining = res.headers['x-rate-limit-remaining'];
-  this.rateLimitReset = res.headers['x-rate-limit-reset'];
+  this.rateLimitRemaining = parseInt(res.headers['x-rate-limit-remaining'], 10);
+  this.rateLimitReset = parseInt(res.headers['x-rate-limit-reset'], 10);
 
   if (this.rateLimitRemaining === 0) {
     this.exhausted = true;
