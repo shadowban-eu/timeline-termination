@@ -97,7 +97,7 @@ GuestSession.prototype.setGuestToken = function setGuestToken(guestToken) {
 };
 
 GuestSession.prototype.getUserId = async function getUserId(screenName) {
-  const res = await this.axiosInstance.get(
+  const res = await this.get(
     'https://api.twitter.com/graphql/G6Lk7nZ6eEKd7LBBZw9MYw/UserByScreenName',
     {
       params: {
@@ -132,7 +132,7 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline(userId, 
 GuestSession.prototype.getTimeline = async function getTimeline(tweetId, noReplyCheck = false) {
   const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
 
-  let res = await this.axiosInstance.get(url, { params: timelineParams });
+  let res = await this.get(url, { params: timelineParams });
   let { instructions } = res.data.timeline;
   let { tweets } = res.data.globalObjects;
   const tweetCount = Object.keys(tweets).length;

@@ -40,6 +40,7 @@ describe('GuestSession Service', () => {
       expect(GuestSession.pool).to.have.lengthOf.above(0);
       expect(GuestSession.pool[GuestSession.pool.length - 1]).to.be.instanceof(GuestSession);
     });
+
     it('returns the new session', () => {
       expect(newSession).to.be.instanceof(GuestSession);
     });
@@ -167,6 +168,7 @@ describe('GuestSession Service', () => {
       session.setGuestToken(guestToken);
       expect(session.guestToken).to.eql(guestToken);
     });
+
     it('sets the X-Guest-Token header on the axios instance', async () => {
       expect(session.axiosInstance.defaults.headers.common['X-Guest-Token']).to.eql(guestToken);
     });
@@ -175,29 +177,37 @@ describe('GuestSession Service', () => {
   describe('#getTimeline', () => {
     let timeline;
     let barrierOnlyTimeline;
+    let getSpy;
     const tweetId = '1183908355372273665';
     const barrierOnlyTweetId = '1192199021307166720';
     const noRepliesTweetId = '1192338232886906880';
 
     before(async () => {
+      getSpy = sandbox.spy(session, 'get');
       timeline = await session.getTimeline(tweetId);
       barrierOnlyTimeline = await session.getTimeline(barrierOnlyTweetId);
     });
+
+    after(() => sandbox.restore());
+
     it('returns instructions for tweetId parameter', async () => {
       expect(timeline).to.have.property('id', tweetId);
       expect(timeline).to.have.property('instructions');
       expect(timeline.instructions).to.be.an('array');
     });
+
     it('returns tweets for tweetId parameter', async () => {
       expect(timeline).to.have.property('tweets');
       expect(timeline.tweets).to.have.property(tweetId);
       expect(Object.keys(timeline.tweets)).to.have.lengthOf.above(1);
     });
+
     it('follows barrier if otherwise no tweets exist', () => {
       expect(barrierOnlyTimeline).to.have.property('id', barrierOnlyTweetId);
       expect(barrierOnlyTimeline.tweets).to.have.property(barrierOnlyTweetId);
       expect(Object.keys(barrierOnlyTimeline.tweets)).to.have.lengthOf.above(1);
     });
+
     it('throws a RangeError when tweet has no replies', async () => {
       let caught = false;
       try {
@@ -209,12 +219,27 @@ describe('GuestSession Service', () => {
       }
       expect(caught).to.be.true;
     });
+
+    it('uses session\'s .get wrapper', () => {
+      expect(getSpy.called).to.be.true;
+    });
   });
 
   describe('#getUserId', () => {
+    let getSpy;
+    before(() => {
+      getSpy = sandbox.spy(session, 'get');
+    });
+
+    after(() => sandbox.restore());
+
     it('returns the user_id for given screen_name', async () => {
       const userId = await session.getUserId('realdonaldtrump');
       expect(userId).to.eql('25073877');
+    });
+
+    it('uses session\'s .get wrapper', () => {
+      expect(getSpy.called).to.be.true;
     });
   });
 
