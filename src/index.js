@@ -56,6 +56,11 @@ if (process.env.NODE_ENV !== 'test') {
   init();
 }
 
+process.on('unhandledRejection', (err) => {
+  logger.error('UHANDLED REJECTION EVENT');
+  logger.error(err);
+});
+
 /**
 * Exports express
 * @public
