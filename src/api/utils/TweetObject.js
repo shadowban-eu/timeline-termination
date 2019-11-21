@@ -56,7 +56,7 @@ const TweetObject = function TweetObject({
   this.favoriteCount = favoriteCount;
   this.replyCount = replyCount;
   this.retweetCount = retweetCount;
-  this.hasMedia = Object.keys(entities).includes('media');
+  this.hasMedia = entities ? Object.keys(entities).includes('media') : false;
   this.isQuoting = !!isQuoting;
   if (this.isQuoting) {
     this.quotedId = quotedId;
