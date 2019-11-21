@@ -42,9 +42,10 @@ class TimelineWatchService {
 
   async pollTimeline() {
     info(`Polling timeline of ${userTag(this.user)}`);
-    const { tweets } = await GuestSession.getUserTimeline(this.user.userId);
-    const withoutRetweets = filter(tweets, { user_id_str: this.user.userId });
-    const tweetIds = filter(withoutRetweets, tweet => !this.user.seenIds.includes(tweet.id_str))
+    const { userId, seenIds } = this.user;
+    const { tweets } = await GuestSession.getUserTimeline({ userId });
+    const withoutRetweets = filter(tweets, { user_id_str: userId });
+    const tweetIds = filter(withoutRetweets, tweet => !seenIds.includes(tweet.id_str))
       .map(tweet => tweet.id_str)
       .sort();
     const newTweets = filter(withoutRetweets, tweet => tweetIds.includes(tweet.id_str));

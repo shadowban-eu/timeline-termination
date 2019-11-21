@@ -271,7 +271,7 @@ describe('GuestSession Service', () => {
     this.timeout(5000);
 
     it('returns 20 tweetObjects and a cursor', async () => {
-      firstPage = await session.getUserTimeline(userId);
+      firstPage = await session.getUserTimeline({ userId });
       const { tweets, cursor } = firstPage;
 
       expect(tweets).to.be.an('object');
@@ -279,8 +279,8 @@ describe('GuestSession Service', () => {
       expect(_cursor).to.be.a('string');
     });
 
-    it('uses the cursor parameter', async () => {
-      const { tweets, cursor } = await session.getUserTimeline(userId, _cursor);
+    it('uses the cursor option', async () => {
+      const { tweets, cursor } = await session.getUserTimeline({ userId, cursor: _cursor });
       const firstPageIds = Object.keys(firstPage.tweets).sort();
       const secondPageIds = Object.keys(tweets).sort();
 
