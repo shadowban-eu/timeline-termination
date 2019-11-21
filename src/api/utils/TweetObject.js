@@ -10,7 +10,10 @@ const mongoSchema = new Schema({
   possiblySensitive: Boolean,
   favoriteCount: Number,
   replyCount: Number,
-  retweetCount: Number
+  retweetCount: Number,
+  hasMedia: Boolean,
+  isQuoting: Boolean,
+  quotedId: String
 }, {
   _id: false
 });
@@ -24,7 +27,10 @@ const joiSchema = Joi.object({
   possiblySensitive: Joi.bool(),
   favoriteCount: Joi.number(),
   replyCount: Joi.number(),
-  retweetCount: Joi.number()
+  retweetCount: Joi.number(),
+  hasMedia: Joi.boolean(),
+  isQuoting: Joi.boolean(),
+  quotedId: Joi.string()
 });
 
 const TweetObject = function TweetObject({
@@ -36,7 +42,10 @@ const TweetObject = function TweetObject({
   possibly_sensitive_editable: possiblySensitive,
   favorite_count: favoriteCount,
   reply_count: replyCount,
-  retweet_count: retweetCount
+  retweet_count: retweetCount,
+  is_quote_status: isQuoting,
+  entities,
+  quoted_status_id_str: quotedId
 }) {
   this.tweetId = tweetId;
   this.userId = userId;
@@ -47,6 +56,11 @@ const TweetObject = function TweetObject({
   this.favoriteCount = favoriteCount;
   this.replyCount = replyCount;
   this.retweetCount = retweetCount;
+  this.hasMedia = Object.keys(entities).includes('media');
+  this.isQuoting = !!isQuoting;
+  if (this.isQuoting) {
+    this.quotedId = quotedId;
+  }
 };
 
 module.exports = TweetObject;
