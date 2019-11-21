@@ -3,6 +3,7 @@ const chai = require('chai').use(require('chai-as-promised'));
 const sinon = require('sinon');
 
 const GuestSession = require('../../services/GuestSession');
+const TweetObject = require('../../utils/TweetObject');
 const { twitterGuestBearer } = require('../../../config/vars');
 
 const { expect } = chai;
@@ -274,15 +275,16 @@ describe('GuestSession Service', () => {
       firstPage = await session.getUserTimeline({ userId });
       const { tweets, cursor } = firstPage;
 
-      expect(tweets).to.be.an('object');
+      expect(tweets).to.be.an('array');
+      tweets.forEach(tweetObject => expect(tweetObject).to.be.instanceof(TweetObject));
+      expect(cursor).to.be.a('string');
       _cursor = cursor;
-      expect(_cursor).to.be.a('string');
     });
 
     it('uses the cursor option', async () => {
       const { tweets, cursor } = await session.getUserTimeline({ userId, cursor: _cursor });
-      const firstPageIds = Object.keys(firstPage.tweets).sort();
-      const secondPageIds = Object.keys(tweets).sort();
+      const firstPageIds = firstPage.tweets.map(tweet => tweet.tweetId).sort();
+      const secondPageIds = tweets.map(tweet => tweet.tweetId).sort();
 
       expect(firstPageIds).not.to.eql(secondPageIds);
       expect(cursor).not.to.eql(_cursor);

@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-expressions */
 const { expect } = require('chai');
-const forEach = require('lodash.foreach');
 const sinon = require('sinon');
 
 const TimelineWatchService = require('../../services/TimelineWatchService');
@@ -77,11 +76,12 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   });
 
   describe('#pollTimeline', () => {
-    it('queries user\'s profile and returns tweetObjects', async () => {
+    it('queries user\'s profile and returns TweetObjects', async () => {
       const tws = new TimelineWatchService(watchedUser);
 
       const tweetObjects = await tws.pollTimeline();
-      forEach(tweetObjects, (tweet) => {
+      expect(tweetObjects).to.be.an('array').with.length.above(0);
+      tweetObjects.forEach((tweet) => {
         expect(tweet).to.be.instanceof(TweetObject);
         expect(tweet.userId).to.be.eql(watchedUser.userId);
       });

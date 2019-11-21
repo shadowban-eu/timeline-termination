@@ -1,7 +1,6 @@
 const filter = require('lodash.filter');
 
 const GuestSession = require('./GuestSession');
-const TweetObject = require('../utils/TweetObject');
 const WatchedUser = require('../models/WatchedUser.model');
 
 const { debug, info } = require('../../config/logger');
@@ -44,14 +43,14 @@ class TimelineWatchService {
     info(`Polling timeline of ${userTag(this.user)}`);
     const { userId, seenIds } = this.user;
     const { tweets } = await GuestSession.getUserTimeline({ userId });
-    const withoutRetweets = filter(tweets, { user_id_str: userId });
-    const tweetIds = filter(withoutRetweets, tweet => !seenIds.includes(tweet.id_str))
-      .map(tweet => tweet.id_str)
+    const withoutRetweets = filter(tweets, { userId });
+    const tweetIds = filter(withoutRetweets, tweet => !seenIds.includes(tweet.tweetId))
+      .map(tweet => tweet.tweetId)
       .sort();
-    const newTweets = filter(withoutRetweets, tweet => tweetIds.includes(tweet.id_str));
+    const newTweets = filter(withoutRetweets, tweet => tweetIds.includes(tweet.tweetId));
 
     this.setSeenIds(tweetIds);
-    return newTweets.map(tweet => new TweetObject(tweet));
+    return newTweets;
   }
 
   static add(watchedUser) {

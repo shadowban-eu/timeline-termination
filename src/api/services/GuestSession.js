@@ -2,6 +2,7 @@ const axios = require('axios');
 const { twitterGuestBearer } = require('../../config/vars');
 
 const DataConversion = require('../utils/DataConversion');
+const TweetObject = require('../utils/TweetObject');
 
 const timelineParams = {
   include_entities: true,
@@ -132,8 +133,11 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline({
       })
     }
   );
+  const { tweets } = res.data.globalObjects;
+  const tweetObjects = Object.keys(tweets).map(tweetId => new TweetObject(tweets[tweetId]));
+
   return {
-    tweets: res.data.globalObjects.tweets,
+    tweets: tweetObjects,
     cursor: DataConversion.getCursorFromTimeline(res.data.timeline)
   };
 };
