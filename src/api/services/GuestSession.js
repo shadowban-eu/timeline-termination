@@ -4,6 +4,8 @@ const { twitterGuestBearer } = require('../../config/vars');
 const DataConversion = require('../utils/DataConversion');
 const TweetObject = require('../utils/TweetObject');
 
+const { error } = require('../../config/logger');
+
 const timelineParams = {
   include_entities: true,
   include_user_entities: true,
@@ -85,9 +87,19 @@ GuestSession.prototype.get = async function get(url, options) {
   } catch (err) {
     switch (err.status) {
       case 403:
+        error('Recreating session due to 403 error', {
+          err,
+          response: err.response,
+          session: this
+        });
         this.destroy();
         return (await GuestSession.createSession()).get(url, options);
       case 429:
+        error('Adding session due to 429 error', {
+          err,
+          response: err.response,
+          session: this
+        });
         return (await GuestSession.pickSession()).get(url, options);
       default:
         throw err;
