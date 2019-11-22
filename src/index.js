@@ -57,8 +57,11 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 process.on('unhandledRejection', (err) => {
-  logger.error('UHANDLED REJECTION EVENT');
-  logger.error(err);
+  const { response } = err;
+  const data = response ? response.data : undefined;
+  const status = response ? response.status : undefined;
+  // eslint-disable-next-line
+  logger.error('UHANDLED REJECTION EVENT', { err, status, data });
 });
 
 /**
