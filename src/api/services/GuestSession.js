@@ -83,10 +83,15 @@ GuestSession.prototype.get = async function get(url, options) {
     }
     return res;
   } catch (err) {
-    if (err.status === 429) {
-      return (await GuestSession.pickSession()).get(url, options);
+    switch (err.status) {
+      case 403:
+        this.destroy();
+        return (await GuestSession.createSession()).get(url, options);
+      case 429:
+        return (await GuestSession.pickSession()).get(url, options);
+      default:
+        throw err;
     }
-    throw err;
   }
 };
 

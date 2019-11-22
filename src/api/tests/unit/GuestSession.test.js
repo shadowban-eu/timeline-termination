@@ -157,9 +157,29 @@ describe('GuestSession Service', () => {
         throw err;
       });
 
-      await session.get('https://twitter.com');
+      const res = await session.get('https://twitter.com');
       expect(getStub.called).to.be.true;
       expect(pickSpy.called).to.be.true;
+      expect(res.status).to.eql(200);
+    });
+
+    it('replaces failing session and replays request on 403 errors', async () => {
+      const failingSession = await GuestSession.createSession();
+      const destroySpy = sandbox.spy(failingSession, 'destroy');
+      const getStub = sandbox.stub(failingSession.axiosInstance, 'get').callsFake(async () => {
+        const err = new Error();
+        err.status = 403;
+        throw err;
+      });
+      const createSpy = sandbox.spy(GuestSession, 'createSession');
+
+      expect(GuestSession.pool).to.include(failingSession);
+
+      const res = await failingSession.get('https://twitter.com');
+      expect(getStub.called).to.be.true;
+      expect(destroySpy.called).to.be.true;
+      expect(createSpy.called).to.be.true;
+      expect(res.status).to.eql(200);
     });
   });
 
