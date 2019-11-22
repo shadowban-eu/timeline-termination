@@ -175,4 +175,8 @@ GuestSession.prototype.getTimeline = async function getTimeline(tweetId, noReply
   };
 };
 
+GuestSession.prototype.destroy = function destroy() {
+  GuestSession.pool.splice(GuestSession.pool.findIndex(session => session === this), 1);
+};
+
 module.exports = GuestSession;

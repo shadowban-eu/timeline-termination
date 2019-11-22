@@ -294,4 +294,17 @@ describe('GuestSession Service', () => {
       expect(getSpy.called).to.be.true;
     });
   });
+
+  describe('#destroy', () => {
+    before(() => sandbox.stub(GuestSession, 'pool').value([]));
+    after(() => sandbox.restore());
+
+    it('removes itself from the session pool', async () => {
+      const keepSession = await GuestSession.createSession();
+      const destroySession = await GuestSession.createSession();
+      expect(GuestSession.pool).to.eql([keepSession, destroySession]);
+      destroySession.destroy();
+      expect(GuestSession.pool).not.to.include(destroySession);
+    });
+  });
 });
