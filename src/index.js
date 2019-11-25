@@ -61,7 +61,11 @@ process.on('unhandledRejection', (err) => {
   const data = response ? response.data : undefined;
   const status = response ? response.status : undefined;
   // eslint-disable-next-line
-  logger.error('UHANDLED REJECTION EVENT', { err, status, data });
+  logger.error('UHANDLED REJECTION EVENT', {
+    err: JSON.stringify(err, Object.getOwnPropertyNames(err)),
+    status,
+    data
+  });
 });
 
 /**
