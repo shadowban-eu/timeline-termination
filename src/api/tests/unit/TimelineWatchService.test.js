@@ -3,9 +3,12 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 const TimelineWatchService = require('../../services/TimelineWatchService');
+const TestService = require('../../services/TestService');
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
 const WatchedUser = require('../../models/WatchedUser.model');
+
+const sandbox = sinon.createSandbox();
 
 describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   this.timeout(10000);
@@ -23,7 +26,6 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     screenName: 'definitelyNotValid',
     active: false
   };
-
 
   before(async () => {
     try {
@@ -76,8 +78,16 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   });
 
   describe('#pollTimeline', () => {
+    let setSeenSpy;
+    let runTestsSpy;
+    before(() => {
+      runTestsSpy = sandbox.spy(TimelineWatchService, 'runTests');
+    });
+    after(() => sandbox.restore());
+
     it('queries user\'s profile and returns TweetObjects', async () => {
       const tws = new TimelineWatchService(watchedUser);
+      setSeenSpy = sandbox.spy(tws, 'setSeenIds');
 
       const tweetObjects = await tws.pollTimeline();
       expect(tweetObjects).to.be.an('array').with.length.above(0);
@@ -85,6 +95,32 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
         expect(tweet).to.be.instanceof(TweetObject);
         expect(tweet.userId).to.be.eql(watchedUser.userId);
       });
+    });
+
+    it('sets the new tweet\'s ids to seen', () => {
+      expect(setSeenSpy.called).to.be.true;
+    });
+
+    it('runs tests for new found tweets', () => {
+      expect(runTestsSpy.called).to.be.true;
+    });
+  });
+
+  describe('.runTests', () => {
+    after(() => sandbox.restore());
+
+    it('runs and returns TestCases for Array of tweet ids', async () => {
+      const tweetIds = [
+        '1186643044432564224',
+        '1192197447948394496',
+        '1192208700330655746',
+        '1192213962659680257',
+        '1192226377325527041'
+      ];
+      const testSpy = sandbox.stub(TestService, 'test').returnsArg(0);
+      const testCases = await TimelineWatchService.runTests(tweetIds);
+      expect(testSpy.callCount).to.eql(tweetIds.length);
+      expect(testCases).to.eql(tweetIds);
     });
   });
 

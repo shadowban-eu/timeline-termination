@@ -1,6 +1,7 @@
 const filter = require('lodash.filter');
 
 const GuestSession = require('./GuestSession');
+const TestService = require('./TestService');
 const WatchedUser = require('../models/WatchedUser.model');
 
 const { debug, info } = require('../../config/logger');
@@ -44,13 +45,19 @@ class TimelineWatchService {
     const { userId, seenIds } = this.user;
     const { tweets } = await GuestSession.getUserTimeline({ userId });
     const withoutRetweets = filter(tweets, { userId });
-    const tweetIds = filter(withoutRetweets, tweet => !seenIds.includes(tweet.tweetId))
+    const newTweetIds = filter(withoutRetweets, tweet => !seenIds.includes(tweet.tweetId))
       .map(tweet => tweet.tweetId)
       .sort();
-    const newTweets = filter(withoutRetweets, tweet => tweetIds.includes(tweet.tweetId));
+    const newTweets = filter(withoutRetweets, tweet => newTweetIds.includes(tweet.tweetId));
 
-    this.setSeenIds(tweetIds);
+    TimelineWatchService.runTests(newTweetIds);
+    this.setSeenIds(newTweetIds);
+
     return newTweets;
+  }
+
+  static async runTests(tweetIds) {
+    return Promise.all(tweetIds.map(TestService.test));
   }
 
   static add(watchedUser) {
