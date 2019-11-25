@@ -51,8 +51,10 @@ class TimelineWatchService {
       .sort();
     const newTweets = filter(withoutRetweets, tweet => newTweetIds.includes(tweet.tweetId));
 
-    TimelineWatchService.runTests(newTweetIds);
-    this.setSeenIds(newTweetIds);
+    if (newTweetIds.length) {
+      TimelineWatchService.runTests(newTweetIds);
+      this.setSeenIds(newTweetIds);
+    }
 
     return newTweets;
   }
