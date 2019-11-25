@@ -18,9 +18,12 @@ class TimelineWatchService {
   }
 
   setSeenIds(tweetIds) {
+    if (!tweetIds || !tweetIds.length) {
+      return;
+    }
     debug(`Updating seenIds for ${userTag(this.user)} with ${tweetIds}`);
     this.user.seenIds = this.user.seenIds.concat(tweetIds);
-    return this.user.save();
+    this.user.save();
   }
 
   start() {
