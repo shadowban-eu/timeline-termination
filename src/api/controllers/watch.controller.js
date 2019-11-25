@@ -4,7 +4,7 @@ const WatchedUser = require('../models/WatchedUser.model');
 const GuestSession = require('../services/GuestSession');
 const TimelineWatchService = require('../services/TimelineWatchService');
 
-const APIError = require('../utils/APIError');
+const { APIError } = require('../utils/Errors');
 
 module.exports.add = async (req, res, next) => {
   const { screenName } = req.body;
