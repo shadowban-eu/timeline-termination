@@ -218,7 +218,7 @@ describe('GuestSession Service', () => {
     let getSpy;
     const tweetId = '1183908355372273665';
     const barrierOnlyTweetId = '1192199021307166720';
-    const noRepliesTweetId = '1192338232886906880';
+    const noRepliesTweetId = '1198999255165415425';
 
     before(async () => {
       getSpy = sandbox.spy(session, 'get');
