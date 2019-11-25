@@ -32,6 +32,7 @@ class TimelineWatchService {
       this.pollTimeline.bind(this),
       this.user.pollingTimeout
     );
+    this.pollTimeline();
   }
 
   stop() {
