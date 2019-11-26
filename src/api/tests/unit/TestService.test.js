@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const GuestSession = require('../../services/GuestSession');
 const TestService = require('../../services/TestService');
 const TweetObject = require('../../utils/TweetObject');
+const { NoRepliesError } = require('../../utils/Errors');
 const TestCase = require('../../models/TestCase.model');
 
 const { joiSchema: tweetObjectJoiSchema } = TweetObject;
@@ -12,6 +13,8 @@ describe('Test Service', () => {
   const notBannedId = '1189475608390242305'; // clean
   // const notBannedId = '1189574251394879489'; // first missing its children
   const notBannedCommentId = '1189545551794233345'; // first missing its children
+  const noRepliesTweetId = '1198999255165415425';
+
 
   before(async () => GuestSession.createSession());
 
@@ -51,6 +54,11 @@ describe('Test Service', () => {
     it('returns false when a comment is not banned', async () => {
       const notBannedTestCase = await TestService.test(notBannedCommentId);
       expect(notBannedTestCase.terminated).to.eql(false);
+    });
+
+    it('returns a NoRepliesError when subject has no replies', async () => {
+      const noRepliesTestCase = await TestService.test(noRepliesTweetId);
+      expect(noRepliesTestCase).to.be.instanceof(NoRepliesError);
     });
   });
 });
