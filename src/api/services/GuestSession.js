@@ -5,6 +5,7 @@ const DataConversion = require('../utils/DataConversion');
 const TweetObject = require('../utils/TweetObject');
 
 const { error } = require('../../config/logger');
+const { NoRepliesError } = require('../utils/Errors');
 
 const timelineParams = {
   include_entities: true,
@@ -169,7 +170,7 @@ GuestSession.prototype.getTimeline = async function getTimeline(tweetId, noReply
   const tweetCount = Object.keys(tweets).length;
 
   if (!noReplyCheck && tweets[tweetId].reply_count === 0) {
-    throw new RangeError(`Tweet ${tweetId} has no replies.`);
+    throw new NoRepliesError(tweetId);
   }
 
   if (tweetCount <= 1) {

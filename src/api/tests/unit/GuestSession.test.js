@@ -4,7 +4,9 @@ const sinon = require('sinon');
 
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
+const { NoRepliesError } = require('../../utils/Errors');
 const { twitterGuestBearer } = require('../../../config/vars');
+
 
 const { expect } = chai;
 const sandbox = sinon.createSandbox();
@@ -246,14 +248,15 @@ describe('GuestSession Service', () => {
       expect(Object.keys(barrierOnlyTimeline.tweets)).to.have.lengthOf.above(1);
     });
 
-    it('throws a RangeError when tweet has no replies', async () => {
+    it('throws a NoRepliesError when tweet has no replies', async () => {
       let caught = false;
       try {
         await session.getTimeline(noRepliesTweetId);
       } catch (err) {
         caught = true;
-        expect(err).to.be.instanceof(RangeError);
+        expect(err).to.be.instanceof(NoRepliesError);
         expect(err).to.have.property('message', `Tweet ${noRepliesTweetId} has no replies.`);
+        expect(err).to.have.property('tweetId', noRepliesTweetId);
       }
       expect(caught).to.be.true;
     });

@@ -45,11 +45,10 @@ class APIError extends ExtendableError {
 }
 
 class NoRepliesError extends ExtendableError {
-  constructor({
-    message,
-    code = 'ENOREPLIES'
-  }) {
-    super({ message, code });
+  constructor(tweetId) {
+    const message = `Tweet ${tweetId || '[unknown]'} has no replies.`;
+    super({ message, code: 'ENOREPLIES' });
+    this.tweetId = tweetId;
   }
 }
 
