@@ -10,9 +10,7 @@ const WatchedUser = require('../../models/WatchedUser.model');
 
 const sandbox = sinon.createSandbox();
 
-describe('TimelineWatch Service', function TimelineWatchServiceTest() {
-  this.timeout(10000);
-
+describe('TimelineWatch Service', () => {
   let watchedUser;
   const watchedUserData = {
     userId: '25073877',

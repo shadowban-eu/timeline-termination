@@ -37,8 +37,7 @@ describe('GuestSession Service', () => {
 
   describe('.createSession', () => {
     let newSession;
-    it('instanciates a new guest session and adds it to .pool', async function testcreateSession() {
-      this.timeout(5000);
+    it('instanciates a new guest session and adds it to .pool', async () => {
       newSession = await GuestSession.createSession();
       expect(GuestSession.pool).to.have.lengthOf.above(0);
       expect(GuestSession.pool[GuestSession.pool.length - 1]).to.be.instanceof(GuestSession);
@@ -288,7 +287,7 @@ describe('GuestSession Service', () => {
     });
   });
 
-  describe('#getUserTimeline', function testGetUserTimeline() {
+  describe('#getUserTimeline', () => {
     const userId = '25073877';
     let _cursor;
     let firstPage;
@@ -296,7 +295,6 @@ describe('GuestSession Service', () => {
     before(() => {
       getSpy = sinon.spy(session, 'get');
     });
-    this.timeout(5000);
 
     it('returns 20 tweetObjects and a cursor', async () => {
       firstPage = await session.getUserTimeline({ userId });

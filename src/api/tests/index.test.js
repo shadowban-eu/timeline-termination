@@ -36,9 +36,7 @@ const checkOnlyWhenValidating = async () => {
   return true;
 };
 
-describe('TimelineTermination Test', function timelineTerminationTests() {
-  this.timeout(20000);
-
+describe('TimelineTermination Test', () => {
   before(function beforeAllDescribes() {
     if (process.env.VALIDATING) {
       checkOnlyWhenValidating(this);
