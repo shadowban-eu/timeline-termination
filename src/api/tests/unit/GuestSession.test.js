@@ -130,7 +130,7 @@ describe('GuestSession Service', () => {
       );
       const parsed = {
         remaining: parseInt(res.headers['x-rate-limit-remaining'], 10),
-        reset: parseInt(res.headers['x-rate-limit-reset'], 10)
+        reset: parseInt(res.headers['x-rate-limit-reset'], 10) * 1000
       };
       expect(session.rateLimitRemaining).to.eql(parsed.remaining);
       expect(session.rateLimitReset).to.eql(parsed.reset);
@@ -330,6 +330,23 @@ describe('GuestSession Service', () => {
       expect(GuestSession.pool).to.eql([keepSession, destroySession]);
       destroySession.destroy();
       expect(GuestSession.pool).not.to.include(destroySession);
+    });
+  });
+
+  describe('#scheduleReset', () => {
+    it('sets a timeout to reset api rate limit counters', (done) => {
+      const exhaustedSession = new GuestSession();
+      exhaustedSession.rateLimitRemaining = 0;
+      exhaustedSession.rateLimitReset = Date.now() + 1000;
+      exhaustedSession.exhausted = true;
+
+      exhaustedSession.scheduleReset();
+      expect(exhaustedSession.resetTimeout).to.have.property('_destroyed', false);
+      console.log('Timeout set - waiting for execution'); // eslint-disable-line
+      setTimeout(() => {
+        expect(exhaustedSession.exhausted).to.eql(false);
+        done();
+      }, 3000);
     });
   });
 });

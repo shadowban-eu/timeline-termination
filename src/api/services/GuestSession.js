@@ -4,7 +4,7 @@ const { twitterGuestBearer } = require('../../config/vars');
 const DataConversion = require('../utils/DataConversion');
 const TweetObject = require('../utils/TweetObject');
 
-const { error } = require('../../config/logger');
+const { error, info } = require('../../config/logger');
 const { NoRepliesError } = require('../utils/Errors');
 
 const timelineParams = {
@@ -46,6 +46,7 @@ const GuestSession = function GuestSession() {
   this.rateLimitRemaining = null;
   this.rateLimitReset = null;
   this.exhausted = false;
+  this.resetTimeout = null;
 };
 
 GuestSession.UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36';
@@ -79,10 +80,11 @@ GuestSession.prototype.get = async function get(url, options) {
   try {
     const res = await this.axiosInstance.get(url, options);
     this.rateLimitRemaining = parseInt(res.headers['x-rate-limit-remaining'], 10);
-    this.rateLimitReset = parseInt(res.headers['x-rate-limit-reset'], 10);
+    this.rateLimitReset = parseInt(res.headers['x-rate-limit-reset'], 10) * 1000;
 
     if (this.rateLimitRemaining === 0) {
       this.exhausted = true;
+      this.scheduleReset();
     }
     return res;
   } catch (err) {
@@ -195,6 +197,17 @@ GuestSession.prototype.getTimeline = async function getTimeline(tweetId, noReply
 
 GuestSession.prototype.destroy = function destroy() {
   GuestSession.pool.splice(GuestSession.pool.findIndex(session => session === this), 1);
+};
+
+GuestSession.prototype.scheduleReset = function scheduleReset() {
+  const timeoutDelta = (this.rateLimitReset - Date.now()) + 1000;
+  info('Scheduling rate-limit reset', { session: this });
+  this.resetTimeout = setTimeout(() => {
+    this.rateLimitReset = null;
+    this.rateLimitRemaing = null;
+    this.exhausted = false;
+    this.resetTimeout = null;
+  }, timeoutDelta);
 };
 
 module.exports = GuestSession;
