@@ -155,7 +155,9 @@ describe('GuestSession Service', () => {
       const pickSpy = sandbox.spy(GuestSession, 'pickSession');
       const getStub = sandbox.stub(session.axiosInstance, 'get').callsFake(async () => {
         const err = new Error();
-        err.status = 429;
+        err.response = {
+          status: 429
+        };
         throw err;
       });
 
@@ -170,7 +172,9 @@ describe('GuestSession Service', () => {
       const destroySpy = sandbox.spy(failingSession, 'destroy');
       const getStub = sandbox.stub(failingSession.axiosInstance, 'get').callsFake(async () => {
         const err = new Error();
-        err.status = 403;
+        err.response = {
+          status: 403
+        };
         throw err;
       });
       const createSpy = sandbox.spy(GuestSession, 'createSession');
