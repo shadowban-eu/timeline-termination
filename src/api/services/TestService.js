@@ -9,7 +9,7 @@ class TestService {
   static async getTweetsForSubject(subjectTweetId) {
     debug(`Getting tweets for subject ${subjectTweetId}`);
 
-    const timeline = await GuestSession.getTimeline(subjectTweetId);
+    const timeline = await GuestSession.getTimeline({ tweetId: subjectTweetId });
     const tweetIds = Object.keys(timeline.tweets).sort();
 
     const subjectIdx = tweetIds.indexOf(subjectTweetId);
@@ -35,7 +35,10 @@ class TestService {
         },
         terminated: false
       });
-      const timeline = await GuestSession.getTimeline(testedWith.tweetId, true);
+      const timeline = await GuestSession.getTimeline({
+        tweetId: testedWith.tweetId,
+        noReplyCheck: true
+      });
       testCase.terminated = !Object.keys(timeline.tweets).includes(subjectTweetId);
       await testCase.save();
       return testCase;

@@ -162,8 +162,12 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline({
   };
 };
 
+
 // eslint-disable-next-line
-GuestSession.prototype.getTimeline = async function getTimeline(tweetId, noReplyCheck = false) {
+GuestSession.prototype.getTimeline = async function getTimeline({
+  tweetId,
+  noReplyCheck = false
+}) {
   const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
 
   let res = await this.get(url, { params: timelineParams });

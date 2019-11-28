@@ -7,7 +7,6 @@ const TweetObject = require('../../utils/TweetObject');
 const { NoRepliesError } = require('../../utils/Errors');
 const { twitterGuestBearer } = require('../../../config/vars');
 
-
 const { expect } = chai;
 const sandbox = sinon.createSandbox();
 
@@ -227,8 +226,8 @@ describe('GuestSession Service', () => {
 
     before(async () => {
       getSpy = sandbox.spy(session, 'get');
-      timeline = await session.getTimeline(tweetId);
-      barrierOnlyTimeline = await session.getTimeline(barrierOnlyTweetId);
+      timeline = await session.getTimeline({ tweetId });
+      barrierOnlyTimeline = await session.getTimeline({ tweetId: barrierOnlyTweetId });
     });
 
     after(() => sandbox.restore());
@@ -254,7 +253,7 @@ describe('GuestSession Service', () => {
     it('throws a NoRepliesError when tweet has no replies', async () => {
       let caught = false;
       try {
-        await session.getTimeline(noRepliesTweetId);
+        await session.getTimeline({ tweetId: noRepliesTweetId });
       } catch (err) {
         caught = true;
         expect(err).to.be.instanceof(NoRepliesError);
