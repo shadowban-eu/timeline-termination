@@ -15,7 +15,6 @@ describe('Test Service', () => {
   const notBannedCommentId = '1189545551794233345'; // first missing its children
   const noRepliesTweetId = '1198999255165415425';
 
-
   before(async () => GuestSession.createSession());
 
   describe('.getTweetsForSubject', () => {
@@ -59,6 +58,40 @@ describe('Test Service', () => {
     it('returns a NoRepliesError when subject has no replies', async () => {
       const noRepliesTestCase = await TestService.test(noRepliesTweetId);
       expect(noRepliesTestCase).to.be.instanceof(NoRepliesError);
+    });
+  });
+
+  describe('.getRepliesTo', () => {
+    const tweetId = '1200390074824843271';
+    const replyItselfTweetId = '1200390106823241729';
+    const secondaryReplyTweetId = '1200409075391115270';
+    const threadReplyTweetId = '1200410351008976898';
+    let timeline;
+    before(async () => {
+      timeline = await TestService.getRepliesTo(replyItselfTweetId);
+    });
+
+    it('returns only direct replies to given tweetId', async () => {
+      const { tweets } = timeline;
+      const responseTweetIds = Object.keys(tweets);
+      expect(responseTweetIds).to.not.include(tweetId);
+      expect(responseTweetIds).to.not.include(replyItselfTweetId);
+      expect(responseTweetIds).to.not.include(threadReplyTweetId);
+      expect(responseTweetIds).to.include(secondaryReplyTweetId);
+    });
+
+    it('throws a NoRepliesError when tweet has no replies', async () => {
+      let caught = false;
+
+      try {
+        await TestService.getRepliesTo(noRepliesTweetId);
+      } catch (err) {
+        caught = true;
+        expect(err).to.be.instanceof(NoRepliesError);
+        expect(err).to.have.property('message', `Tweet ${noRepliesTweetId} has no replies.`);
+        expect(err).to.have.property('tweetId', noRepliesTweetId);
+      }
+      expect(caught).to.be.true;
     });
   });
 });

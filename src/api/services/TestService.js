@@ -9,19 +9,31 @@ class TestService {
   static async getTweetsForSubject(subjectTweetId) {
     debug(`Getting tweets for subject ${subjectTweetId}`);
 
-    const timeline = await GuestSession.getTimeline({ tweetId: subjectTweetId });
-    const tweetIds = Object.keys(timeline.tweets).sort();
-
-    const subjectIdx = tweetIds.indexOf(subjectTweetId);
-    const subjectTweet = timeline.tweets[subjectTweetId];
-
-    const testTweetId = tweetIds[subjectIdx + 1];
-    const testTweet = timeline.tweets[testTweetId];
+    const { tweets: replies, owner: subjectTweet } = await TestService.getRepliesTo(subjectTweetId);
+    const testTweetId = Object.keys(replies)[0];
+    const testTweet = replies[testTweetId];
 
     return {
       subject: new TweetObject(subjectTweet),
       testedWith: new TweetObject(testTweet)
     };
+  }
+
+  static async getRepliesTo(tweetId) {
+    const timeline = await GuestSession.getTimeline(tweetId);
+    // eslint-disable-next-line
+    for (let id in timeline.tweets) {
+      const inReplyToId = timeline.tweets[id].in_reply_to_status_id_str;
+      if (inReplyToId !== tweetId) {
+        delete timeline.tweets[id];
+      }
+    }
+
+    if (!Object.keys(timeline.tweets).length) {
+      throw new NoRepliesError(tweetId);
+    }
+
+    return timeline;
   }
 
   static async test(subjectTweetId) {
@@ -35,10 +47,7 @@ class TestService {
         },
         terminated: false
       });
-      const timeline = await GuestSession.getTimeline({
-        tweetId: testedWith.tweetId,
-        noReplyCheck: true
-      });
+      const timeline = await GuestSession.getTimeline(testedWith.tweetId);
       testCase.terminated = !Object.keys(timeline.tweets).includes(subjectTweetId);
       await testCase.save();
       return testCase;

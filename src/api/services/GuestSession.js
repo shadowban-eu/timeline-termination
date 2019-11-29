@@ -5,7 +5,6 @@ const DataConversion = require('../utils/DataConversion');
 const TweetObject = require('../utils/TweetObject');
 
 const { error, info } = require('../../config/logger');
-const { NoRepliesError } = require('../utils/Errors');
 
 const timelineParams = {
   include_entities: true,
@@ -164,20 +163,13 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline({
 
 
 // eslint-disable-next-line
-GuestSession.prototype.getTimeline = async function getTimeline({
-  tweetId,
-  noReplyCheck = false
-}) {
+GuestSession.prototype.getTimeline = async function getTimeline(tweetId) {
   const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
 
   let res = await this.get(url, { params: timelineParams });
   let { instructions } = res.data.timeline;
   let { tweets } = res.data.globalObjects;
   const tweetCount = Object.keys(tweets).length;
-
-  if (!noReplyCheck && tweets[tweetId].reply_count === 0) {
-    throw new NoRepliesError(tweetId);
-  }
 
   if (tweetCount <= 1) {
     const showMore = DataConversion.getShowMoreCursor(instructions);

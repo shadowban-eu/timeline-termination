@@ -4,7 +4,6 @@ const sinon = require('sinon');
 
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
-const { NoRepliesError } = require('../../utils/Errors');
 const { twitterGuestBearer } = require('../../../config/vars');
 
 const { expect } = chai;
@@ -222,12 +221,11 @@ describe('GuestSession Service', () => {
     let getSpy;
     const tweetId = '1183908355372273665';
     const barrierOnlyTweetId = '1192199021307166720';
-    const noRepliesTweetId = '1198999255165415425';
 
     before(async () => {
       getSpy = sandbox.spy(session, 'get');
-      timeline = await session.getTimeline({ tweetId });
-      barrierOnlyTimeline = await session.getTimeline({ tweetId: barrierOnlyTweetId });
+      timeline = await session.getTimeline(tweetId);
+      barrierOnlyTimeline = await session.getTimeline(barrierOnlyTweetId);
     });
 
     after(() => sandbox.restore());
@@ -253,19 +251,6 @@ describe('GuestSession Service', () => {
       expect(barrierOnlyTimeline).to.have.property('id', barrierOnlyTweetId);
       expect(barrierOnlyTimeline.tweets).to.have.property(barrierOnlyTweetId);
       expect(Object.keys(barrierOnlyTimeline.tweets)).to.have.lengthOf.above(1);
-    });
-
-    it('throws a NoRepliesError when tweet has no replies', async () => {
-      let caught = false;
-      try {
-        await session.getTimeline({ tweetId: noRepliesTweetId });
-      } catch (err) {
-        caught = true;
-        expect(err).to.be.instanceof(NoRepliesError);
-        expect(err).to.have.property('message', `Tweet ${noRepliesTweetId} has no replies.`);
-        expect(err).to.have.property('tweetId', noRepliesTweetId);
-      }
-      expect(caught).to.be.true;
     });
 
     it('uses session\'s .get wrapper', () => {
