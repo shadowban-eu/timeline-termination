@@ -17,7 +17,7 @@
     "lint:fix": "npm run lint --fix",
     "test": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text mocha --timeout 20000 src/api/tests/index.test.js",
     "test:debug": "cross-env NODE_ENV=test mocha --timeout 20000 --inspect-brk src/api/tests/index.test.js",
-    "test:unit": "cross-env NODE_ENV=test NODE_TEST_SUITE=unit nyc --reporter=html --reporter=text mocha src/api/tests/index.test.js",
+    "test:unit": "cross-env NODE_ENV=test NODE_TEST_SUITE=unit mocha --timeout 20000 src/api/tests/index.test.js",
     "test:unit:watch": "nodemon --exec npm run test:unit",
     "test:integration": "cross-env NODE_ENV=test NODE_TEST_SUITE=integration nyc --reporter=html --reporter=text mocha --timeout 20000 src/api/tests/index.test.js",
     "test:integration:watch": "nodemon --exec npm run test:integration",
