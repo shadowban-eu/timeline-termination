@@ -244,6 +244,11 @@ describe('GuestSession Service', () => {
       expect(Object.keys(timeline.tweets)).to.have.lengthOf.above(1);
     });
 
+    it('returns the conversation owner tweet', () => {
+      expect(new TweetObject(timeline.owner)).to.be.ok;
+      expect(timeline.owner.id_str).to.eql(tweetId);
+    });
+
     it('follows barrier if otherwise no tweets exist', () => {
       expect(barrierOnlyTimeline).to.have.property('id', barrierOnlyTweetId);
       expect(barrierOnlyTimeline.tweets).to.have.property(barrierOnlyTweetId);

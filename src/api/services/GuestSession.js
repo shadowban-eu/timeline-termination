@@ -194,6 +194,7 @@ GuestSession.prototype.getTimeline = async function getTimeline({
   }
   return {
     id: tweetId,
+    owner: tweets[tweetId],
     instructions,
     tweets
   };
