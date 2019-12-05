@@ -1,6 +1,0 @@
-version: "3.5"
-services:
-  timeline-termination-tester:
-    command: npm run docker:start
-    environment:
-      - NODE_ENV=production
