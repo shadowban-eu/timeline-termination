@@ -13,7 +13,8 @@ const mongoSchema = new Schema({
   retweetCount: Number,
   hasMedia: Boolean,
   isQuoting: Boolean,
-  quotedId: String
+  quotedId: String,
+  parentId: String
 }, {
   _id: false
 });
@@ -30,38 +31,49 @@ const joiSchema = Joi.object({
   retweetCount: Joi.number(),
   hasMedia: Joi.boolean(),
   isQuoting: Joi.boolean(),
-  quotedId: Joi.string()
+  quotedId: Joi.string(),
+  parentId: Joi.string(),
+  parentTweet: Joi.object().allow(null)
 });
 
-const TweetObject = function TweetObject({
-  id_str: tweetId,
-  user_id_str: userId,
-  created_at: createdAt,
-  lang,
-  full_text: fullText,
-  possibly_sensitive_editable: possiblySensitive,
-  favorite_count: favoriteCount,
-  reply_count: replyCount,
-  retweet_count: retweetCount,
-  is_quote_status: isQuoting,
-  entities,
-  quoted_status_id_str: quotedId
-}) {
-  this.tweetId = tweetId;
-  this.userId = userId;
-  this.createdAt = createdAt;
-  this.lang = lang;
-  this.fullText = fullText;
-  this.possiblySensitive = possiblySensitive;
-  this.favoriteCount = favoriteCount;
-  this.replyCount = replyCount;
-  this.retweetCount = retweetCount;
-  this.hasMedia = entities ? Object.keys(entities).includes('media') : false;
-  this.isQuoting = !!isQuoting;
-  if (this.isQuoting) {
-    this.quotedId = quotedId;
+class TweetObject {
+  constructor({
+    id_str: tweetId,
+    user_id_str: userId,
+    created_at: createdAt,
+    lang,
+    full_text: fullText,
+    possibly_sensitive_editable: possiblySensitive,
+    favorite_count: favoriteCount,
+    reply_count: replyCount,
+    retweet_count: retweetCount,
+    is_quote_status: isQuoting,
+    entities,
+    quoted_status_id_str: quotedId,
+    in_reply_to_status_id_str: parentId
+  }) {
+    this.tweetId = tweetId;
+    this.userId = userId;
+    this.createdAt = createdAt;
+    this.lang = lang;
+    this.fullText = fullText;
+    this.possiblySensitive = possiblySensitive;
+    this.favoriteCount = favoriteCount;
+    this.replyCount = replyCount;
+    this.retweetCount = retweetCount;
+    this.hasMedia = entities ? Object.keys(entities).includes('media') : false;
+    this.isQuoting = !!isQuoting;
+    this.parentId = parentId;
+    this.parentTweet = null;
+    if (this.isQuoting) {
+      this.quotedId = quotedId;
+    }
   }
-};
+
+  // async fetchParentTweet() {
+  //   const res = GuestSession.
+  // }
+}
 
 module.exports = TweetObject;
 module.exports.joiSchema = joiSchema;
