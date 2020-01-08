@@ -72,12 +72,17 @@ class TestService {
             testedWith: probeTweet
           },
           resurrected: true,
-          terminated: false,
           deleted: true
         });
       }
     }
-    return new TestCase();
+    return new TestCase({
+      tweets: {
+        subject: probeTweet.parentTweet,
+        testedWith: probeTweet
+      },
+      resurrected: true
+    });
   }
 }
 

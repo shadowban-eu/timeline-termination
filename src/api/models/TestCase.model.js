@@ -13,9 +13,18 @@ const testCaseSchema = new mongoose.Schema({
     subject: TweetObjectSchema,
     testedWith: TweetObjectSchema
   },
-  terminated: Boolean,
-  resurrected: Boolean,
-  deleted: Boolean
+  terminated: {
+    type: Boolean,
+    default: false
+  },
+  resurrected: {
+    type: Boolean,
+    default: false
+  },
+  deleted: {
+    type: Boolean,
+    default: false
+  }
 });
 
 testCaseSchema.method({
