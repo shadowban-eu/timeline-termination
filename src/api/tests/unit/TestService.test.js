@@ -13,7 +13,7 @@ describe('Test Service', () => {
   const notBannedId = '1189475608390242305'; // clean
   // const notBannedId = '1189574251394879489'; // first missing its children
   const notBannedCommentId = '1189545551794233345'; // first missing its children
-  const noRepliesTweetId = '1198999255165415425';
+  const noRepliesTweetId = '1189546480144654342';
 
   before(async () => GuestSession.createSession());
 
@@ -62,10 +62,10 @@ describe('Test Service', () => {
   });
 
   describe('.getRepliesTo', () => {
-    const tweetId = '1200390074824843271';
-    const replyItselfTweetId = '1200390106823241729';
-    const secondaryReplyTweetId = '1200409075391115270';
-    const threadReplyTweetId = '1200410351008976898';
+    const tweetId = '1214936748276559873';
+    const replyItselfTweetId = '1214936839259340800';
+    const secondaryReplyTweetId = '1214936962349576192';
+    const threadReplyTweetId = '1214937462562263042';
     let timeline;
     before(async () => {
       timeline = await TestService.getRepliesTo(replyItselfTweetId);
