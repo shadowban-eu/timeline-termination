@@ -58,6 +58,27 @@ class TestService {
       throw err;
     }
   }
+
+  static async resurrect(probeTweetId) {
+    debug(`Probing ${probeTweetId} for parent resurrection`);
+    const probeTweet = await GuestSession.getTweet(probeTweetId);
+    try {
+      probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
+    } catch (err) {
+      if (err.response.status === 404) {
+        return new TestCase({
+          tweets: {
+            subject: probeTweet.parentTweet,
+            testedWith: probeTweet
+          },
+          resurrected: true,
+          terminated: false,
+          deleted: true
+        });
+      }
+    }
+    return new TestCase();
+  }
 }
 
 module.exports = TestService;

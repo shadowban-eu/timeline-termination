@@ -69,10 +69,6 @@ class TweetObject {
       this.quotedId = quotedId;
     }
   }
-
-  // async fetchParentTweet() {
-  //   const res = GuestSession.
-  // }
 }
 
 module.exports = TweetObject;

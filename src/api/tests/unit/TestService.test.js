@@ -15,6 +15,9 @@ describe('Test Service', () => {
   const notBannedCommentId = '1189545551794233345'; // first missing its children
   const noRepliesTweetId = '1189546480144654342';
 
+  const resurrectProbeId = '1183909147072520193';
+  const resurrectDeletedProbeId = '1214957370431942656';
+
   before(async () => GuestSession.createSession());
 
   describe('.getTweetsForSubject', () => {
@@ -27,37 +30,6 @@ describe('Test Service', () => {
       const { error: subjectError } = tweetObjectJoiSchema.validate(subject);
       expect(testedWithError).to.be.null;
       expect(subjectError).to.be.null;
-    });
-  });
-
-  describe('.test', () => {
-    let testCase;
-
-    before(async () => {
-      testCase = await TestService.test(bannedId);
-    });
-
-    it('returns a TestCase', async () => {
-      expect(testCase).to.be.instanceof(TestCase);
-    });
-
-    it('returns true when tweet is banned ', async () => {
-      expect(testCase.terminated).to.eql(true);
-    });
-
-    it('returns false when tweet is not banned ', async () => {
-      const notBannedTestCase = await TestService.test(notBannedId);
-      expect(notBannedTestCase.terminated).to.eql(false);
-    });
-
-    it('returns false when a comment is not banned', async () => {
-      const notBannedTestCase = await TestService.test(notBannedCommentId);
-      expect(notBannedTestCase.terminated).to.eql(false);
-    });
-
-    it('returns a NoRepliesError when subject has no replies', async () => {
-      const noRepliesTestCase = await TestService.test(noRepliesTweetId);
-      expect(noRepliesTestCase).to.be.instanceof(NoRepliesError);
     });
   });
 
@@ -92,6 +64,57 @@ describe('Test Service', () => {
         expect(err).to.have.property('tweetId', noRepliesTweetId);
       }
       expect(caught).to.be.true;
+    });
+  });
+
+  describe('.test', () => {
+    let testCase;
+
+    before(async () => {
+      testCase = await TestService.test(bannedId);
+    });
+
+    it('returns a TestCase', async () => {
+      expect(testCase).to.be.instanceof(TestCase);
+    });
+
+    it('returns true when tweet is banned ', async () => {
+      expect(testCase.terminated).to.eql(true);
+    });
+
+    it('returns false when tweet is not banned ', async () => {
+      const notBannedTestCase = await TestService.test(notBannedId);
+      expect(notBannedTestCase.terminated).to.eql(false);
+    });
+
+    it('returns false when a comment is not banned', async () => {
+      const notBannedTestCase = await TestService.test(notBannedCommentId);
+      expect(notBannedTestCase.terminated).to.eql(false);
+    });
+
+    it('returns a NoRepliesError when subject has no replies', async () => {
+      const noRepliesTestCase = await TestService.test(noRepliesTweetId);
+      expect(noRepliesTestCase).to.be.instanceof(NoRepliesError);
+    });
+  });
+
+  describe('.resurrect', () => {
+    let ttbTestCase;
+    let deletedTestCase;
+
+    before(async () => {
+      ttbTestCase = await TestService.resurrect(resurrectProbeId);
+      deletedTestCase = await TestService.resurrect(resurrectDeletedProbeId);
+    });
+
+    it('returns a TestCase', () => {
+      expect(ttbTestCase).to.be.instanceof(TestCase);
+    });
+
+    it('identifies deleted tweets', () => {
+      // console.log(deletedTestCase)
+      expect(deletedTestCase.resurrected).to.be.true;
+      expect(deletedTestCase.terminated).to.be.false;
     });
   });
 });

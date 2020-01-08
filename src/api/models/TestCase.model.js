@@ -13,14 +13,18 @@ const testCaseSchema = new mongoose.Schema({
     subject: TweetObjectSchema,
     testedWith: TweetObjectSchema
   },
-  terminated: Boolean
+  terminated: Boolean,
+  resurrected: Boolean,
+  deleted: Boolean
 });
 
 testCaseSchema.method({
   transform() {
     const transformed = {
       tweets: { subject: {}, testedWith: {} },
-      terminated: this.terminated
+      terminated: this.terminated,
+      resurrected: this.resurrected,
+      deleted: this.deleted
     };
 
     const tweetFields = apiResponseSchema._inner.children.map(field => field.key);
