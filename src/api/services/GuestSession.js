@@ -72,6 +72,9 @@ GuestSession.getUserId = async screenName =>
 GuestSession.getUserTimeline = async userId =>
   (await GuestSession.pickSession()).getUserTimeline(userId);
 
+GuestSession.getTweet = async tweetId =>
+  (await GuestSession.pickSession()).getTweet(tweetId);
+
 GuestSession.getTimeline = async (tweetId, noReplyCheck = false) =>
   (await GuestSession.pickSession()).getTimeline(tweetId, noReplyCheck);
 
@@ -161,6 +164,17 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline({
   };
 };
 
+GuestSession.prototype.getTweet = async function getTweet(tweetId) {
+  const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
+  const res = await this.get(url, {
+    params: {
+      ...timelineParams,
+      count: 1
+    }
+  });
+  const { tweets } = res.data.globalObjects;
+  return new TweetObject(tweets[tweetId]);
+};
 
 // eslint-disable-next-line
 GuestSession.prototype.getTimeline = async function getTimeline(tweetId) {

@@ -81,6 +81,22 @@ describe('GuestSession Service', () => {
     });
   });
 
+  describe('.getTweet', () => {
+    let getTweetSpy;
+    before(async () => {
+      sandbox.stub(GuestSession, 'pool').value([]);
+      await GuestSession.createSession();
+      getTweetSpy = sandbox.spy(GuestSession.pool[0], 'getTweet');
+    });
+    after(() => sandbox.restore());
+
+    it('calls #getTweet on a GuestSession from .pool for tweetId parameter', async () => {
+      const tweetId = '1183908355372273665';
+      GuestSession.getTweet(tweetId);
+      expect(getTweetSpy.calledWith(tweetId));
+    });
+  });
+
   describe('.getTimeline', async () => {
     let getTimelineSpy;
     before(async () => {
@@ -212,6 +228,15 @@ describe('GuestSession Service', () => {
 
     it('sets the X-Guest-Token header on the axios instance', async () => {
       expect(session.axiosInstance.defaults.headers.common['X-Guest-Token']).to.eql(guestToken);
+    });
+  });
+
+  describe('#getTweet', () => {
+    it('returns a TweetObject for tweetId', async () => {
+      const tweetId = '1183908355372273665';
+      const tweet = await session.getTweet(tweetId);
+      expect(tweet).to.be.instanceof(TweetObject);
+      expect(tweet).to.have.property('tweetId', tweetId);
     });
   });
 
