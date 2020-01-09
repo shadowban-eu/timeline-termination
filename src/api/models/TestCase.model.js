@@ -27,7 +27,7 @@ const testCaseSchema = new mongoose.Schema({
 testCaseSchema.method({
   transform() {
     const transformed = {
-      tweets: { subject: {}, testedWith: {} },
+      tweets: { subject: null, testedWith: {} },
       terminated: this.terminated,
       resurrected: this.resurrected,
       deleted: this.deleted
@@ -35,8 +35,14 @@ testCaseSchema.method({
 
     const tweetFields = apiResponseSchema._inner.children.map(field => field.key);
 
+    if (this.tweets.subject !== null) {
+      transformed.tweets.subject = {};
+      tweetFields.forEach((field) => {
+        transformed.tweets.subject[field] = this.tweets.subject[field];
+      });
+    }
+
     tweetFields.forEach((field) => {
-      transformed.tweets.subject[field] = this.tweets.subject[field];
       transformed.tweets.testedWith[field] = this.tweets.testedWith[field];
     });
 
