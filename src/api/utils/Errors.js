@@ -52,5 +52,14 @@ class NoRepliesError extends ExtendableError {
   }
 }
 
+class NotAReplyError extends ExtendableError {
+  constructor(tweetId) {
+    const message = `Tweet ${tweetId || '[unknown]'} is not a reply.`;
+    super({ message, code: 'ENOTAREPLY' });
+    this.tweetId = tweetId;
+  }
+}
+
 module.exports.APIError = APIError;
 module.exports.NoRepliesError = NoRepliesError;
+module.exports.NotAReplyError = NotAReplyError;

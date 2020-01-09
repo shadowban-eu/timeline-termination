@@ -1,6 +1,6 @@
 const GuestSession = require('./GuestSession');
 const TweetObject = require('../utils/TweetObject');
-const { NoRepliesError } = require('../utils/Errors');
+const { NoRepliesError, NotAReplyError } = require('../utils/Errors');
 const TestCase = require('../models/TestCase.model');
 
 const { debug } = require('../../config/logger');
@@ -63,6 +63,9 @@ class TestService {
     debug(`Probing ${probeTweetId} for parent resurrection`);
     const probeTimeline = await GuestSession.getTimeline(probeTweetId);
     const probeTweet = new TweetObject(probeTimeline.owner);
+    if (!probeTweet.parentId) {
+      throw new NotAReplyError(probeTweetId);
+    }
     const testCase = new TestCase({
       tweets: { testedWith: probeTweet },
       resurrected: true
