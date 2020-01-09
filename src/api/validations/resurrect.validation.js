@@ -5,8 +5,8 @@ const { joiSchema: tweetObject } = require('../utils/TweetObject');
 module.exports = {
   // GET /v1/resurrect/:probeId
   root: {
-    param: {
-      probeId: Joi.string()
+    params: {
+      probeId: Joi.string().regex(/\d{10,20}/)
     }
   },
   rootResponse: Joi.object({

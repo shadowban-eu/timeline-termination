@@ -9,7 +9,7 @@ const { rootResponse } = require('../../validations/resurrect.validation');
 const resurrectTerminatedProbeId = '1183909147072520193';
 
 describe('Resurrect API', () => {
-  describe('GET /v1/resurrect/:tweetId', () => {
+  describe('GET /v1/resurrect/:probeId', () => {
     it('returns resurrect test results', () =>
       request(app)
         .get(`/v1/resurrect/${resurrectTerminatedProbeId}`)
@@ -23,5 +23,13 @@ describe('Resurrect API', () => {
           expect(testCase).to.have.property('deleted', false);
           expect(testCase.tweets.subject).to.not.be.null;
         }));
+
+    it('rejects non-numerical :probeIds', async () => {
+      const fooIds = ['foo', '9283', '19387a928d8f1'];
+      await Promise.all(fooIds.map(probeId => request(app)
+        .get(`/v1/resurrect/${probeId}`)
+        .expect(httpStatus.BAD_REQUEST)
+      ));
+    });
   });
 });
