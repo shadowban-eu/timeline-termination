@@ -232,11 +232,27 @@ describe('GuestSession Service', () => {
   });
 
   describe('#getTweet', () => {
+    afterEach(() => sandbox.restore());
+
     it('returns a TweetObject for tweetId', async () => {
       const tweetId = '1183908355372273665';
       const tweet = await session.getTweet(tweetId);
       expect(tweet).to.be.instanceof(TweetObject);
       expect(tweet).to.have.property('tweetId', tweetId);
+    });
+
+    it('returns null on 404 request error', async () => {
+      const getStub = sandbox.stub(session.axiosInstance, 'get').callsFake(async () => {
+        const err = new Error();
+        err.response = {
+          status: 404
+        };
+        throw err;
+      });
+
+      const tweetObject = await session.getTweet('tweetId');
+      expect(getStub.called).to.be.true;
+      expect(tweetObject).to.be.null;
     });
   });
 

@@ -165,15 +165,22 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline({
 };
 
 GuestSession.prototype.getTweet = async function getTweet(tweetId) {
-  const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
-  const res = await this.get(url, {
-    params: {
-      ...timelineParams,
-      count: 1
+  try {
+    const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
+    const res = await this.get(url, {
+      params: {
+        ...timelineParams,
+        count: 1
+      }
+    });
+    const { tweets } = res.data.globalObjects;
+    return new TweetObject(tweets[tweetId]);
+  } catch (err) {
+    if (err.response.status === 404) {
+      return null;
     }
-  });
-  const { tweets } = res.data.globalObjects;
-  return new TweetObject(tweets[tweetId]);
+    throw err;
+  }
 };
 
 // eslint-disable-next-line

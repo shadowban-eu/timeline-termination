@@ -20,7 +20,6 @@ describe('Test Service', () => {
   const notTerminatedCommentId = '1189545551794233345'; // first missing its children
   const noRepliesTweetId = '1189546480144654342';
 
-  const resurrectSkipProbeId = '1214936839259340800';
   const resurrectTerminatedProbeId = '1183909147072520193';
   const resurrectDeletedProbeId = '1214957370431942656';
   const resurrectNotTerminatedProbeId = '1189637556914270209';
@@ -117,7 +116,7 @@ describe('Test Service', () => {
     });
 
     it('skips not hidden parents', async () => {
-      const skippedTestCase = await TestService.resurrect(resurrectSkipProbeId);
+      const skippedTestCase = await TestService.resurrect(resurrectNotTerminatedProbeId);
       testProps({ resurrectCandidate: false }, skippedTestCase);
     });
 
@@ -130,17 +129,6 @@ describe('Test Service', () => {
       };
       const deletedTestCase = await TestService.resurrect(resurrectDeletedProbeId);
       testProps(expectedProps, deletedTestCase);
-    });
-
-    it('identifies not terminated tweets', async () => {
-      const expectedProps = {
-        resurrected: true,
-        deleted: false,
-        terminated: false,
-        resurrectCandidate: false
-      };
-      const notTerminatedTestCase = await TestService.resurrect(resurrectNotTerminatedProbeId);
-      testProps(expectedProps, notTerminatedTestCase);
     });
 
     it('identifies terminated tweets', () => {

@@ -66,8 +66,11 @@ class TestService {
     if (!probeTweet.parentId) {
       throw new NotAReplyError(probeTweetId);
     }
+
+    probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
+
     const testCase = new TestCase({
-      tweets: { testedWith: probeTweet },
+      tweets: { subject: probeTweet.parentTweet, testedWith: probeTweet },
       resurrected: true
     });
     // no need to test, when it's not hidden
@@ -75,24 +78,10 @@ class TestService {
     testCase.resurrectCandidate = isCandidate;
 
     if (isCandidate) {
-      try {
-        probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
-        testCase.terminated = probeTweet.parentTweet !== null;
-        testCase.deleted = false;
-        testCase.tweets.subject = probeTweet.parentTweet;
-      } catch (err) {
-        if (err.response.status === 404) {
-          testCase.deleted = true;
-          testCase.terminated = false;
-        }
-      }
-      await testCase.save();
-      return testCase;
+      testCase.terminated = testCase.tweets.subject !== null;
+      testCase.deleted = testCase.tweets.subject === null;
     }
 
-    testCase.terminated = false;
-    testCase.deleted = false;
-    testCase.tweets.subject = probeTweet.parentTweet;
     await testCase.save();
     return testCase;
   }
