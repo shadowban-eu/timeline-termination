@@ -8,6 +8,11 @@ const TestCase = require('../../models/TestCase.model');
 
 const { joiSchema: tweetObjectJoiSchema } = TweetObject;
 
+const testProps = (expectedProps, testCase) =>
+  Object.keys(expectedProps).forEach(propKey =>
+    expect(testCase).to.have.property(propKey, expectedProps[propKey])
+  );
+
 describe('Test Service', () => {
   const terminatedId = '1183908355372273665';
   const notTerminatedId = '1189475608390242305'; // clean
@@ -15,6 +20,7 @@ describe('Test Service', () => {
   const notTerminatedCommentId = '1189545551794233345'; // first missing its children
   const noRepliesTweetId = '1189546480144654342';
 
+  const resurrectSkipProbeId = '1214936839259340800';
   const resurrectTerminatedProbeId = '1183909147072520193';
   const resurrectDeletedProbeId = '1214957370431942656';
   const resurrectNotTerminatedProbeId = '1189637556914270209';
@@ -110,24 +116,41 @@ describe('Test Service', () => {
       expect(terminatedTestCase).to.be.instanceof(TestCase);
     });
 
+    it('skips not hidden parents', async () => {
+      const skippedTestCase = await TestService.resurrect(resurrectSkipProbeId);
+      testProps({ resurrectCandidate: false }, skippedTestCase);
+    });
+
     it('identifies deleted tweets', async () => {
+      const expectedProps = {
+        resurrected: true,
+        deleted: true,
+        terminated: false,
+        resurrectCandidate: true
+      };
       const deletedTestCase = await TestService.resurrect(resurrectDeletedProbeId);
-      expect(deletedTestCase.resurrected).to.be.true;
-      expect(deletedTestCase.deleted).to.be.true;
-      expect(deletedTestCase.terminated).to.be.false;
+      testProps(expectedProps, deletedTestCase);
     });
 
     it('identifies not terminated tweets', async () => {
+      const expectedProps = {
+        resurrected: true,
+        deleted: false,
+        terminated: false,
+        resurrectCandidate: false
+      };
       const notTerminatedTestCase = await TestService.resurrect(resurrectNotTerminatedProbeId);
-      expect(notTerminatedTestCase.resurrected).to.be.true;
-      expect(notTerminatedTestCase.deleted).to.be.false;
-      expect(notTerminatedTestCase.terminated).to.be.false;
+      testProps(expectedProps, notTerminatedTestCase);
     });
 
     it('identifies terminated tweets', () => {
-      expect(terminatedTestCase.resurrected).to.be.true;
-      expect(terminatedTestCase.terminated).to.be.true;
-      expect(terminatedTestCase.deleted).to.be.false;
+      const expectedProps = {
+        resurrected: true,
+        terminated: true,
+        deleted: false,
+        resurrectCandidate: true
+      };
+      testProps(expectedProps, terminatedTestCase);
     });
   });
 });

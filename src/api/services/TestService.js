@@ -72,6 +72,7 @@ class TestService {
     });
     // no need to test, when it's not hidden
     const isCandidate = !Object.keys(probeTimeline.tweets).includes(probeTweet.parentId);
+    testCase.resurrectCandidate = isCandidate;
 
     if (isCandidate) {
       try {

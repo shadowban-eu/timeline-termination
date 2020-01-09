@@ -21,7 +21,8 @@ const testCaseSchema = new mongoose.Schema({
   },
   terminated: Boolean,
   resurrected: Boolean,
-  deleted: Boolean
+  deleted: Boolean,
+  resurrectCandidate: Boolean
 });
 
 testCaseSchema.method({
@@ -30,7 +31,8 @@ testCaseSchema.method({
       tweets: { subject: null, testedWith: {} },
       terminated: this.terminated,
       resurrected: this.resurrected,
-      deleted: this.deleted
+      deleted: this.deleted,
+      resurrectCandidate: this.resurrectCandidate
     };
 
     const tweetFields = apiResponseSchema._inner.children.map(field => field.key);

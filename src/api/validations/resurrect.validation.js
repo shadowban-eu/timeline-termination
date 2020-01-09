@@ -16,6 +16,7 @@ module.exports = {
     }),
     resurrected: Joi.boolean().required(),
     terminated: Joi.boolean().required(),
-    deleted: Joi.boolean().required()
+    deleted: Joi.boolean().required(),
+    resurrectCandidate: Joi.boolean().required()
   })
 };

@@ -9,6 +9,11 @@ const { rootResponse } = require('../../validations/resurrect.validation');
 const terminatedProbeId = '1183909147072520193';
 const noParentProbeId = '1214936748276559873';
 
+const testProps = (expectedProps, testCase) =>
+  Object.keys(expectedProps).forEach(propKey =>
+    expect(testCase).to.have.property(propKey, expectedProps[propKey])
+  );
+
 describe('Resurrect API', () => {
   describe('GET /v1/resurrect/:probeId', () => {
     it('returns resurrect test results', () =>
@@ -19,9 +24,12 @@ describe('Resurrect API', () => {
           const testCase = res.body;
           const { error } = rootResponse.validate(testCase);
           expect(error).to.be.null;
-          expect(testCase).to.have.property('resurrected', true);
-          expect(testCase).to.have.property('terminated', true);
-          expect(testCase).to.have.property('deleted', false);
+          testProps({
+            resurrected: true,
+            terminated: true,
+            deleted: false,
+            resurrectCandidate: true
+          }, testCase);
           expect(testCase.tweets.subject).to.not.be.null;
         }));
 
