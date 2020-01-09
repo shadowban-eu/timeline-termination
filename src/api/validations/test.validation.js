@@ -14,6 +14,8 @@ module.exports = {
       subject: tweetObject.required(),
       testedWith: tweetObject.required()
     }),
-    terminated: Joi.boolean().required()
+    terminated: Joi.boolean().required(),
+    resurrected: Joi.boolean(),
+    deleted: Joi.boolean()
   })
 };

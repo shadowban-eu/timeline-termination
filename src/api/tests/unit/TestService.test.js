@@ -15,7 +15,7 @@ describe('Test Service', () => {
   const notTerminatedCommentId = '1189545551794233345'; // first missing its children
   const noRepliesTweetId = '1189546480144654342';
 
-  const resurrectProbeId = '1183909147072520193';
+  const resurrectTerminatedProbeId = '1183909147072520193';
   const resurrectDeletedProbeId = '1214957370431942656';
   const resurrectNotTerminatedProbeId = '1189637556914270209';
 
@@ -99,31 +99,35 @@ describe('Test Service', () => {
     });
   });
 
-  describe.only('.resurrect', () => {
-    let ttbTestCase;
-    let deletedTestCase;
-    let notTerminatedTestCase;
+  describe('.resurrect', () => {
+    let terminatedTestCase;
 
     before(async () => {
-      ttbTestCase = await TestService.resurrect(resurrectProbeId);
-      deletedTestCase = await TestService.resurrect(resurrectDeletedProbeId);
-      notTerminatedTestCase = await TestService.resurrect(resurrectNotTerminatedProbeId);
+      terminatedTestCase = await TestService.resurrect(resurrectTerminatedProbeId);
     });
 
     it('returns a TestCase', () => {
-      expect(ttbTestCase).to.be.instanceof(TestCase);
+      expect(terminatedTestCase).to.be.instanceof(TestCase);
     });
 
-    it('identifies deleted tweets', () => {
+    it('identifies deleted tweets', async () => {
+      const deletedTestCase = await TestService.resurrect(resurrectDeletedProbeId);
       expect(deletedTestCase.resurrected).to.be.true;
       expect(deletedTestCase.deleted).to.be.true;
       expect(deletedTestCase.terminated).to.be.false;
     });
 
-    it.only('identifies not terminated tweets', () => {
+    it('identifies not terminated tweets', async () => {
+      const notTerminatedTestCase = await TestService.resurrect(resurrectNotTerminatedProbeId);
       expect(notTerminatedTestCase.resurrected).to.be.true;
       expect(notTerminatedTestCase.deleted).to.be.false;
       expect(notTerminatedTestCase.terminated).to.be.false;
+    });
+
+    it('identifies terminated tweets', () => {
+      expect(terminatedTestCase.resurrected).to.be.true;
+      expect(terminatedTestCase.terminated).to.be.true;
+      expect(terminatedTestCase.deleted).to.be.false;
     });
   });
 });

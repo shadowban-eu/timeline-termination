@@ -61,28 +61,36 @@ class TestService {
 
   static async resurrect(probeTweetId) {
     debug(`Probing ${probeTweetId} for parent resurrection`);
-    const probeTweet = await GuestSession.getTweet(probeTweetId);
-    try {
-      probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
-    } catch (err) {
-      if (err.response.status === 404) {
-        return new TestCase({
-          tweets: {
-            subject: probeTweet.parentTweet,
-            testedWith: probeTweet
-          },
-          resurrected: true,
-          deleted: true
-        });
-      }
-    }
-    return new TestCase({
-      tweets: {
-        subject: probeTweet.parentTweet,
-        testedWith: probeTweet
-      },
+    const probeTimeline = await GuestSession.getTimeline(probeTweetId);
+    const probeTweet = new TweetObject(probeTimeline.owner);
+    const testCase = new TestCase({
+      tweets: { testedWith: probeTweet },
       resurrected: true
     });
+    // no need to test, when it's not hidden
+    const isCandidate = !Object.keys(probeTimeline.tweets).includes(probeTweet.parentId);
+
+    if (isCandidate) {
+      try {
+        probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
+        testCase.terminated = probeTweet.parentTweet !== null;
+        testCase.deleted = false;
+        testCase.tweets.subject = probeTweet.parentTweet;
+      } catch (err) {
+        if (err.response.status === 404) {
+          testCase.deleted = true;
+          testCase.terminated = false;
+        }
+      }
+      await testCase.save();
+      return testCase;
+    }
+
+    testCase.terminated = false;
+    testCase.deleted = false;
+    testCase.tweets.subject = probeTweet.parentTweet;
+    await testCase.save();
+    return testCase;
   }
 }
 

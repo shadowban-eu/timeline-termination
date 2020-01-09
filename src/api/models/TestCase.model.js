@@ -10,21 +10,18 @@ const {
  */
 const testCaseSchema = new mongoose.Schema({
   tweets: {
-    subject: TweetObjectSchema,
-    testedWith: TweetObjectSchema
+    subject: {
+      type: TweetObjectSchema,
+      default: null
+    },
+    testedWith: {
+      type: TweetObjectSchema,
+      default: null
+    }
   },
-  terminated: {
-    type: Boolean,
-    default: false
-  },
-  resurrected: {
-    type: Boolean,
-    default: false
-  },
-  deleted: {
-    type: Boolean,
-    default: false
-  }
+  terminated: Boolean,
+  resurrected: Boolean,
+  deleted: Boolean
 });
 
 testCaseSchema.method({
