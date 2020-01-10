@@ -28,9 +28,11 @@ describe('GuestSession Service', () => {
     expect(GuestSession.pool).to.be.an('array');
   });
 
-  it('instanciates with an axios instance, using the guestBearer token', () => {
+  it('instanciates with an axios instance, using the guestBearer token and User-Agent', () => {
     expect(session.axiosInstance.defaults.headers.common.Authorization)
       .to.eql(`Bearer ${twitterGuestBearer}`);
+    expect(session.axiosInstance.defaults.headers.common['User-Agent'])
+      .to.eql(GuestSession.UA);
   });
 
   describe('.createSession', () => {

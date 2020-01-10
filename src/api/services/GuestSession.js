@@ -36,7 +36,8 @@ const GuestSession = function GuestSession() {
   this.axiosInstance = axios.create({
     headers: {
       common: {
-        Authorization: `Bearer ${GuestSession.guestBearer}`
+        Authorization: `Bearer ${GuestSession.guestBearer}`,
+        'User-Agent': GuestSession.UA
       }
     },
     withCredentials: true
