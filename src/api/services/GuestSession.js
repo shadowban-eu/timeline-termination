@@ -69,6 +69,9 @@ GuestSession.pickSession = async () => {
   return availableSession || GuestSession.createSession();
 };
 
+GuestSession.getUser = async screenName =>
+  (await GuestSession.pickSession()).getUser(screenName);
+
 GuestSession.getUserId = async screenName =>
   (await GuestSession.pickSession()).getUserId(screenName);
 

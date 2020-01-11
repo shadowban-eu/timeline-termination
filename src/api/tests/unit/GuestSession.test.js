@@ -117,6 +117,22 @@ describe('GuestSession Service', () => {
     });
   });
 
+  describe('.getUser', () => {
+    let getUserSpy;
+    before(async () => {
+      sandbox.stub(GuestSession, 'pool').value([]);
+      await GuestSession.createSession();
+      getUserSpy = sandbox.spy(GuestSession.pool[0], 'getUser');
+    });
+    after(() => sandbox.restore());
+
+    it.only('calls #getUser on a GuestSession from .pool for screenName parameter', async () => {
+      const screenName = 'realdonaldtrump';
+      GuestSession.getUser(screenName);
+      expect(getUserSpy.calledWith(screenName));
+    });
+  });
+
   describe('.getUserId', () => {
     let getUserIdSpy;
     before(async () => {
@@ -126,7 +142,7 @@ describe('GuestSession Service', () => {
     });
     after(() => sandbox.restore());
 
-    it('calls #getUserId on a GuestSession from .pool for tweetId parameter', async () => {
+    it('calls #getUserId on a GuestSession from .pool for screenName parameter', async () => {
       const screenName = 'realdonaldtrump';
       GuestSession.getUserId(screenName);
       expect(getUserIdSpy.calledWith(screenName));
@@ -381,7 +397,7 @@ describe('GuestSession Service', () => {
 
     after(() => sandbox.restore());
 
-    it('returns the user_id for given screen_name', async () => {
+    it('returns the user_id for given screenName', async () => {
       const userId = await session.getUserId('realdonaldtrump');
       expect(userId).to.eql('25073877');
     });
