@@ -202,6 +202,22 @@ describe('GuestSession Service', () => {
       expect(createSpy.called).to.be.true;
       expect(res.status).to.eql(200);
     });
+
+    it.only('throws any request errors when passError option is truthy', async () => {
+      const failingSession = await GuestSession.createSession();
+      const err = new Error();
+      sandbox.stub(failingSession.axiosInstance, 'get').callsFake(async () => {
+        err.response = {
+          status: 403
+        };
+        throw err;
+      });
+
+      const res = failingSession.get('https://twitter.com', {
+        passError: true
+      });
+      await expect(res).to.be.rejectedWith(err);
+    });
   });
 
   describe('#getGuestToken', () => {

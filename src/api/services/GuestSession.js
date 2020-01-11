@@ -91,6 +91,9 @@ GuestSession.prototype.get = async function get(url, options) {
     }
     return res;
   } catch (err) {
+    if (options.passError) {
+      throw err;
+    }
     switch (err.response.status) {
       case 403:
         error('Recreating session due to 403 error', {
