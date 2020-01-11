@@ -22,6 +22,8 @@ const testCaseSchema = new mongoose.Schema({
   terminated: Boolean,
   resurrected: Boolean,
   deleted: Boolean,
+  protected: Boolean,
+  suspended: Boolean,
   resurrectCandidate: Boolean
 });
 
@@ -32,6 +34,8 @@ testCaseSchema.method({
       terminated: this.terminated,
       resurrected: this.resurrected,
       deleted: this.deleted,
+      protected: this.protected,
+      suspended: this.suspended,
       resurrectCandidate: this.resurrectCandidate
     };
 

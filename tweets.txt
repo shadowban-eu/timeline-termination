@@ -1,6 +1,11 @@
 Deleted; violation against rules
 https://api.twitter.com/2/timeline/conversation/1214965401156640768.json
 
-Protected accounts:
-https://twitter.com/aNatsFan/status/1214642928464871426
-- HornsUp40
+Protected:
+  @gunnarsonrani
+  {protectedTweetId}: https://twitter.com/gunnarsonrani/status/1215986882905022472
+  {protectedReplyId}: https://twitter.com/shadowbaneu_bot/status/1215987140351479809
+
+Suspended:
+  @fossybeer
+  {suspendedReplyId}: https://twitter.com/LateNightGirlMe/status/1209194776656072704

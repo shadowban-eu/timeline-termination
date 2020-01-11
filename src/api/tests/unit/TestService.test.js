@@ -16,10 +16,6 @@ describe('Test Service', () => {
   const notTerminatedCommentId = '1189545551794233345'; // first missing its children
   const noRepliesTweetId = '1189546480144654342';
 
-  const resurrectTerminatedProbeId = '1183909147072520193';
-  const resurrectDeletedProbeId = '1214957370431942656';
-  const resurrectNotTerminatedProbeId = '1189637556914270209';
-
   before(async () => GuestSession.createSession());
 
   describe('.getTweetsForSubject', () => {
@@ -104,9 +100,14 @@ describe('Test Service', () => {
 
   describe('.resurrect', () => {
     let terminatedTestCase;
+    const terminatedProbeId = '1183909147072520193';
+    const deletedProbeId = '1214957370431942656';
+    const notTerminatedProbeId = '1189637556914270209';
+    const suspendedProbeId = '1209194776656072704';
+    const protectedProbeId = '1215987140351479809';
 
     before(async () => {
-      terminatedTestCase = await TestService.resurrect(resurrectTerminatedProbeId);
+      terminatedTestCase = await TestService.resurrect(terminatedProbeId);
     });
 
     it('returns a TestCase', () => {
@@ -114,7 +115,7 @@ describe('Test Service', () => {
     });
 
     it('skips not hidden parents', async () => {
-      const skippedTestCase = await TestService.resurrect(resurrectNotTerminatedProbeId);
+      const skippedTestCase = await TestService.resurrect(notTerminatedProbeId);
       testProps(skippedTestCase, { resurrectCandidate: false });
     });
 
@@ -125,7 +126,7 @@ describe('Test Service', () => {
         terminated: false,
         resurrectCandidate: true
       };
-      const deletedTestCase = await TestService.resurrect(resurrectDeletedProbeId);
+      const deletedTestCase = await TestService.resurrect(deletedProbeId);
       testProps(deletedTestCase, expectedProps);
     });
 
@@ -137,6 +138,24 @@ describe('Test Service', () => {
         resurrectCandidate: true
       };
       testProps(terminatedTestCase, expectedProps);
+    });
+
+    it('identifies suspended authors', async () => {
+      const expectedProps = {
+        resurrected: true,
+        suspended: true
+      };
+      const suspendedTestCase = await TestService.resurrect(suspendedProbeId);
+      testProps(suspendedTestCase, expectedProps);
+    });
+
+    it('identifies protected authors', async () => {
+      const expectedProps = {
+        resurrected: true,
+        protected: true
+      };
+      const protectedTestCase = await TestService.resurrect(protectedProbeId);
+      testProps(protectedTestCase, expectedProps);
     });
   });
 });

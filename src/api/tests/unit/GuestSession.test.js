@@ -126,7 +126,7 @@ describe('GuestSession Service', () => {
     });
     after(() => sandbox.restore());
 
-    it.only('calls #getUser on a GuestSession from .pool for screenName parameter', async () => {
+    it('calls #getUser on a GuestSession from .pool for screenName parameter', async () => {
       const screenName = 'realdonaldtrump';
       GuestSession.getUser(screenName);
       expect(getUserSpy.calledWith(screenName));
@@ -346,8 +346,8 @@ describe('GuestSession Service', () => {
     let getSpy;
     let userObject;
     const validScreenName = 'realDonaldTrump';
-    const suspendedScreenName = 'protected';
-    const protectedScreenName = 'HornsUp40';
+    const suspendedScreenName = 'fossybeer';
+    const protectedScreenName = 'gunnarsonrani';
 
     before(async () => {
       getSpy = sandbox.spy(session, 'get');
@@ -369,18 +369,12 @@ describe('GuestSession Service', () => {
 
     it('returns profile data for protected accounts', async () => {
       const user = await session.getUser(protectedScreenName);
-      testProps(user, {
-        id: '153794693',
-        protected: true,
-        screenName: protectedScreenName
-      });
+      testProps(user, { protected: true });
     });
 
     it('returns a UserObject for suspended accounts', async () => {
       const user = await session.getUser(suspendedScreenName);
-      testProps(user, {
-        suspended: true
-      });
+      testProps(user, { suspended: true });
     });
 
 

@@ -33,6 +33,8 @@ const joiSchema = Joi.object({
   isQuoting: Joi.boolean(),
   quotedId: Joi.string(),
   parentId: Joi.string(),
+  parentAuthorId: Joi.string(),
+  parentAuthorScreenName: Joi.string(),
   parentTweet: Joi.object().allow(null)
 });
 
@@ -50,7 +52,9 @@ class TweetObject {
     is_quote_status: isQuoting,
     entities,
     quoted_status_id_str: quotedId,
-    in_reply_to_status_id_str: parentId
+    in_reply_to_status_id_str: parentId,
+    in_reply_to_user_id_str: parentAuthorId,
+    in_reply_to_screen_name: parentAuthorScreenName
   }) {
     this.tweetId = tweetId;
     this.userId = userId;
@@ -64,6 +68,8 @@ class TweetObject {
     this.hasMedia = entities ? Object.keys(entities).includes('media') : false;
     this.isQuoting = !!isQuoting;
     this.parentId = parentId;
+    this.parentAuthorId = parentAuthorId;
+    this.parentAuthorScreenName = parentAuthorScreenName;
     this.parentTweet = null;
     if (this.isQuoting) {
       this.quotedId = quotedId;

@@ -67,12 +67,27 @@ class TestService {
       throw new NotAReplyError(probeTweetId);
     }
 
-    probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
-
     const testCase = new TestCase({
-      tweets: { subject: probeTweet.parentTweet, testedWith: probeTweet },
+      tweets: { subject: null, testedWith: probeTweet },
       resurrected: true
     });
+
+    const parentUser = await GuestSession.getUser(probeTweet.parentAuthorScreenName);
+    if (parentUser.protected) {
+      testCase.protected = true;
+      await testCase.save();
+      return testCase;
+    }
+
+    if (parentUser.suspended) {
+      testCase.suspended = true;
+      await testCase.save();
+      return testCase;
+    }
+
+    probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
+    testCase.tweets.subject = probeTweet.parentTweet;
+
     // no need to test, when it's not hidden
     const isCandidate = !Object.keys(probeTimeline.tweets).includes(probeTweet.parentId);
     testCase.resurrectCandidate = isCandidate;
