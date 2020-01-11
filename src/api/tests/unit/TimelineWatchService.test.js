@@ -7,6 +7,7 @@ const TestService = require('../../services/TestService');
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
 const WatchedUser = require('../../models/WatchedUser.model');
+const { testProps } = require('../utils');
 
 const sandbox = sinon.createSandbox();
 
@@ -137,11 +138,15 @@ describe('TimelineWatch Service', () => {
 
     it('starts polling the user\'s profile timeline', () => {
       tws.start();
-      expect(tws.pollingTimeout).to.have.property('_destroyed', false);
+      testProps(tws.pollingTimeout, {
+        _destroyed: false
+      });
     });
 
     it('uses the user\'s pollingTimeout value', () =>
-      expect(tws.pollingTimeout).to.have.property('_idleTimeout', tws.user.pollingTimeout)
+      testProps(tws.pollingTimeout, {
+        _idleTimeout: tws.user.pollingTimeout
+      })
     );
 
     it('stops/replaces a running polling Timer', () => {
@@ -154,7 +159,9 @@ describe('TimelineWatch Service', () => {
     it('stops a running pollingTimeout', async () => {
       const tws = new TimelineWatchService(watchedUser);
       tws.start();
-      expect(tws.pollingTimeout).to.have.property('_destroyed', false);
+      testProps(tws.pollingTimeout, {
+        _destroyed: false
+      });
       tws.stop();
       expect(tws.pollingTimeout).to.be.null;
     });
@@ -169,7 +176,7 @@ describe('TimelineWatch Service', () => {
     after(() => addedService.stop());
 
     it('adds a WatchedUser to .watching', () => {
-      expect(TimelineWatchService.watching).to.have.property(watchedUser.userId);
+      testProps(TimelineWatchService.watching, { [watchedUser.userId]: undefined });
     });
 
     it('returns created/added TimelineWatchService instance', () => {
@@ -178,7 +185,7 @@ describe('TimelineWatch Service', () => {
     });
 
     it('starts watching, if watchedUser.active is true', () => {
-      expect(addedService.pollingTimeout).to.have.property('_destroyed', false);
+      testProps(addedService.pollingTimeout, { _destroyed: false });
     });
 
     it('does not start watching, if watchedUser.active is false', () => {

@@ -7,6 +7,7 @@ const app = require('../../../index');
 const WatchedUser = require('../../models/WatchedUser.model');
 const TimelineWatchService = require('../../services/TimelineWatchService');
 const { getRootResponse, postRootResponse } = require('../../validations/watch.validation');
+const { testProps } = require('../utils');
 
 describe('User Watch API', () => {
   let getTestWatchedUser;
@@ -57,13 +58,13 @@ describe('User Watch API', () => {
         .send({ screenName: '@waytoolongforaTwitterHandle' })
         .expect(httpStatus.BAD_REQUEST);
 
-      expect(noValueRes.body).to.have.property('errors');
+      testProps(noValueRes.body, { errors: undefined });
       expect(noValueRes.body.errors[0].messages[0]).to.eql('"screenName" is required');
 
-      expect(tooLongValueRes.body).to.have.property('errors');
+      testProps(tooLongValueRes.body, { errors: undefined });
       expect(tooLongValueRes.body.errors[0].messages[0]).to.include('fails to match');
 
-      expect(invalidCharsRes.body).to.have.property('errors');
+      testProps(invalidCharsRes.body, { errors: undefined });
       expect(invalidCharsRes.body.errors[0].messages[0]).to.include('fails to match');
     });
 
@@ -73,7 +74,7 @@ describe('User Watch API', () => {
         .post('/v1/watch')
         .send({ screenName });
 
-      expect(res.body).to.have.property('watchedUser');
+      testProps(res.body, { watchedUser: undefined });
       const { error } = postRootResponse.validate(res.body.watchedUser);
       expect(error).to.be.null;
       postTestWatchedUser = res.body.watchedUser;
@@ -91,8 +92,7 @@ describe('User Watch API', () => {
         .post('/v1/watch')
         .send({ screenName })
         .expect(httpStatus.CONFLICT);
-
-      expect(res.body).to.have.property('message', `${screenName} already exists.`);
+      testProps(res.body, { message: `${screenName} already exists.` });
     });
   });
 });

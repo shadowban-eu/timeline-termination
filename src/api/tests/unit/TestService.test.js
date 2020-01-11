@@ -5,13 +5,9 @@ const TestService = require('../../services/TestService');
 const TweetObject = require('../../utils/TweetObject');
 const { NoRepliesError } = require('../../utils/Errors');
 const TestCase = require('../../models/TestCase.model');
+const { testProps } = require('../utils');
 
 const { joiSchema: tweetObjectJoiSchema } = TweetObject;
-
-const testProps = (expectedProps, testCase) =>
-  Object.keys(expectedProps).forEach(propKey =>
-    expect(testCase).to.have.property(propKey, expectedProps[propKey])
-  );
 
 describe('Test Service', () => {
   const terminatedId = '1183908355372273665';
@@ -66,8 +62,10 @@ describe('Test Service', () => {
       } catch (err) {
         caught = true;
         expect(err).to.be.instanceof(NoRepliesError);
-        expect(err).to.have.property('message', `Tweet ${noRepliesTweetId} has no replies.`);
-        expect(err).to.have.property('tweetId', noRepliesTweetId);
+        testProps(err, {
+          message: `Tweet ${noRepliesTweetId} has no replies.`,
+          tweetId: noRepliesTweetId
+        });
       }
       expect(caught).to.be.true;
     });
@@ -117,7 +115,7 @@ describe('Test Service', () => {
 
     it('skips not hidden parents', async () => {
       const skippedTestCase = await TestService.resurrect(resurrectNotTerminatedProbeId);
-      testProps({ resurrectCandidate: false }, skippedTestCase);
+      testProps(skippedTestCase, { resurrectCandidate: false });
     });
 
     it('identifies deleted tweets', async () => {
@@ -128,7 +126,7 @@ describe('Test Service', () => {
         resurrectCandidate: true
       };
       const deletedTestCase = await TestService.resurrect(resurrectDeletedProbeId);
-      testProps(expectedProps, deletedTestCase);
+      testProps(deletedTestCase, expectedProps);
     });
 
     it('identifies terminated tweets', () => {
@@ -138,7 +136,7 @@ describe('Test Service', () => {
         deleted: false,
         resurrectCandidate: true
       };
-      testProps(expectedProps, terminatedTestCase);
+      testProps(terminatedTestCase, expectedProps);
     });
   });
 });

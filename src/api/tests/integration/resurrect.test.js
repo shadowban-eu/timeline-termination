@@ -5,14 +5,10 @@ const { expect } = require('chai');
 
 const app = require('../../../index');
 const { rootResponse } = require('../../validations/resurrect.validation');
+const { testProps } = require('../utils');
 
 const terminatedProbeId = '1183909147072520193';
 const noParentProbeId = '1214936748276559873';
-
-const testProps = (expectedProps, testCase) =>
-  Object.keys(expectedProps).forEach(propKey =>
-    expect(testCase).to.have.property(propKey, expectedProps[propKey])
-  );
 
 describe('Resurrect API', () => {
   describe('GET /v1/resurrect/:probeId', () => {
@@ -24,12 +20,12 @@ describe('Resurrect API', () => {
           const testCase = res.body;
           const { error } = rootResponse.validate(testCase);
           expect(error).to.be.null;
-          testProps({
+          testProps(testCase, {
             resurrected: true,
             terminated: true,
             deleted: false,
             resurrectCandidate: true
-          }, testCase);
+          });
           expect(testCase.tweets.subject).to.not.be.null;
         }));
 
@@ -46,10 +42,12 @@ describe('Resurrect API', () => {
         .get(`/v1/resurrect/${noParentProbeId}`)
         .expect(httpStatus.INTERNAL_SERVER_ERROR)
         .then((res) => {
-          expect(res.body).to.have.property('name', 'APIError');
+          testProps(res.body, { name: 'APIError' });
           const actualError = res.body.errors[0];
-          expect(actualError).to.have.property('name', 'NotAReplyError');
-          expect(actualError).to.have.property('tweetId', noParentProbeId);
+          testProps(actualError, {
+            name: 'NotAReplyError',
+            tweetId: noParentProbeId
+          });
         })
     );
   });

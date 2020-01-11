@@ -6,6 +6,7 @@ const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
 const UserObject = require('../../utils/UserObject');
 const { twitterGuestBearer } = require('../../../config/vars');
+const { testProps } = require('../utils');
 
 const { expect } = chai;
 const sandbox = sinon.createSandbox();
@@ -159,12 +160,16 @@ describe('GuestSession Service', () => {
           'x-rate-limit-remaining': '0'
         }
       }));
-      expect(session).to.have.property('exhausted', false);
+      testProps(session, {
+        exhausted: false
+      });
 
       await session.get('https://foo.com');
 
-      expect(session).to.have.property('exhausted', true);
-      expect(session.rateLimitRemaining).to.eql(0);
+      testProps(session, {
+        exhausted: true,
+        rateLimitRemaining: 0
+      });
     });
 
     it('calls .pickSession and replays request on 429 errors', async () => {
@@ -257,7 +262,7 @@ describe('GuestSession Service', () => {
       const tweetId = '1183908355372273665';
       const tweet = await session.getTweet(tweetId);
       expect(tweet).to.be.instanceof(TweetObject);
-      expect(tweet).to.have.property('tweetId', tweetId);
+      testProps(tweet, { tweetId });
     });
 
     it('returns null on 404 request error', async () => {
@@ -291,14 +296,15 @@ describe('GuestSession Service', () => {
     after(() => sandbox.restore());
 
     it('returns instructions for tweetId parameter', async () => {
-      expect(timeline).to.have.property('id', tweetId);
-      expect(timeline).to.have.property('instructions');
+      testProps(timeline, {
+        id: tweetId,
+        instructions: undefined
+      });
       expect(timeline.instructions).to.be.an('array');
     });
 
     it('returns tweets for tweetId parameter', async () => {
-      expect(timeline).to.have.property('tweets');
-      expect(timeline.tweets).to.have.property(tweetId);
+      testProps(timeline.tweets, { [tweetId]: undefined });
       expect(Object.keys(timeline.tweets)).to.have.lengthOf.above(1);
     });
 
@@ -308,8 +314,10 @@ describe('GuestSession Service', () => {
     });
 
     it('follows barrier if otherwise no tweets exist', () => {
-      expect(barrierOnlyTimeline).to.have.property('id', barrierOnlyTweetId);
-      expect(barrierOnlyTimeline.tweets).to.have.property(barrierOnlyTweetId);
+      testProps(barrierOnlyTimeline, {
+        id: barrierOnlyTweetId
+      });
+      testProps(barrierOnlyTimeline.tweets, { [barrierOnlyTweetId]: undefined });
       expect(Object.keys(barrierOnlyTimeline.tweets)).to.have.lengthOf.above(1);
     });
 
@@ -337,20 +345,26 @@ describe('GuestSession Service', () => {
     });
 
     it('returns profile data for given screenName', () => {
-      expect(userObject).to.have.property('id', '25073877');
-      expect(userObject).to.have.property('screenName', validScreenName);
+      testProps(userObject, {
+        id: '25073877',
+        screenName: validScreenName
+      });
     });
 
     it('returns profile data for protected accounts', async () => {
       const user = await session.getUser(protectedScreenName);
-      expect(user).to.have.property('id', '153794693');
-      expect(user).to.have.property('protected', true);
-      expect(user).to.have.property('screenName', protectedScreenName);
+      testProps(user, {
+        id: '153794693',
+        protected: true,
+        screenName: protectedScreenName
+      });
     });
 
     it('returns a UserObject for suspended accounts', async () => {
       const user = await session.getUser(suspendedScreenName);
-      expect(user).to.have.property('suspended', true);
+      testProps(user, {
+        suspended: true
+      });
     });
 
 
@@ -431,7 +445,9 @@ describe('GuestSession Service', () => {
       exhaustedSession.exhausted = true;
 
       exhaustedSession.scheduleReset();
-      expect(exhaustedSession.resetTimeout).to.have.property('_destroyed', false);
+      testProps(exhaustedSession.resetTimeout, {
+        _destroyed: false
+      });
       console.log('Timeout set - waiting for execution'); // eslint-disable-line
       setTimeout(() => {
         expect(exhaustedSession.exhausted).to.eql(false);

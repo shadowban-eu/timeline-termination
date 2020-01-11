@@ -7,6 +7,7 @@ const profileTimelineNoCursor = require('./_data/profileTimeline_noCursor.json')
 const showMoreInstructions = require('./_data/showMoreInstructions.json');
 const noShowMoreInstructions = require('./_data/noShowMoreInstructions.json');
 const showMoreAbusiveInstructions = require('./_data/showMoreAbusiveInstructions.json');
+const { testProps } = require('../utils');
 
 describe('DataConversion Utility', () => {
   describe('.getCursorFromTimeline', () => {
@@ -24,13 +25,17 @@ describe('DataConversion Utility', () => {
   describe('.getShowMoreCursor', () => {
     it('finds the lowQuality ShowMore cursor in a timeline\'s instructions', () => {
       const showMoreCursor = DataConversion.getShowMoreCursor(showMoreInstructions);
-      expect(showMoreCursor).to.have.property('cursor', 'LBkGJQQRAAA=');
-      expect(showMoreCursor).to.have.property('type', 'low');
+      testProps(showMoreCursor, {
+        cursor: 'LBkGJQQRAAA=',
+        type: 'low'
+      });
     });
     it('finds the abusiveQuality ShowMore cursor in a timeline\'s instructions', () => {
       const showMoreCursor = DataConversion.getShowMoreCursor(showMoreAbusiveInstructions);
-      expect(showMoreCursor).to.have.property('cursor', 'LBkWjIC17fDVxYshJQYRAAA=');
-      expect(showMoreCursor).to.have.property('type', 'abusive');
+      testProps(showMoreCursor, {
+        cursor: 'LBkWjIC17fDVxYshJQYRAAA=',
+        type: 'abusive'
+      });
     });
     it('returns null, if no ShowMore cursor is found', () => {
       const showMoreCursor = DataConversion.getShowMoreCursor(noShowMoreInstructions);
