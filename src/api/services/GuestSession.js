@@ -3,6 +3,8 @@ const { twitterGuestBearer } = require('../../config/vars');
 
 const DataConversion = require('../utils/DataConversion');
 const TweetObject = require('../utils/TweetObject');
+const UserObject = require('../utils/UserObject');
+const { isSuspendedError } = require('../utils/Errors');
 
 const { error, info } = require('../../config/logger');
 
@@ -91,7 +93,7 @@ GuestSession.prototype.get = async function get(url, options) {
     }
     return res;
   } catch (err) {
-    if (options.passError) {
+    if (options && options.passError) {
       throw err;
     }
     switch (err.response.status) {
@@ -128,6 +130,24 @@ GuestSession.prototype.getGuestToken = async function getGuestToken() {
 GuestSession.prototype.setGuestToken = function setGuestToken(guestToken) {
   this.guestToken = guestToken;
   this.axiosInstance.defaults.headers.common['X-Guest-Token'] = this.guestToken;
+};
+
+GuestSession.prototype.getUser = async function getUser(screenName) {
+  try {
+    const res = await this.get(
+      'https://api.twitter.com/1.1/users/show.json',
+      {
+        params: { screen_name: screenName },
+        passError: true
+      }
+    );
+    return new UserObject(res.data);
+  } catch (err) {
+    if (isSuspendedError(err)) {
+      return new UserObject({ suspended: true });
+    }
+    throw err;
+  }
 };
 
 GuestSession.prototype.getUserId = async function getUserId(screenName) {

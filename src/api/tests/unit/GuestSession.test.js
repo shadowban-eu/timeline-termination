@@ -4,6 +4,7 @@ const sinon = require('sinon');
 
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
+const UserObject = require('../../utils/UserObject');
 const { twitterGuestBearer } = require('../../../config/vars');
 
 const { expect } = chai;
@@ -203,7 +204,7 @@ describe('GuestSession Service', () => {
       expect(res.status).to.eql(200);
     });
 
-    it.only('throws any request errors when passError option is truthy', async () => {
+    it('throws any request errors when passError option is truthy', async () => {
       const failingSession = await GuestSession.createSession();
       const err = new Error();
       sandbox.stub(failingSession.axiosInstance, 'get').callsFake(async () => {
@@ -311,6 +312,47 @@ describe('GuestSession Service', () => {
       expect(barrierOnlyTimeline.tweets).to.have.property(barrierOnlyTweetId);
       expect(Object.keys(barrierOnlyTimeline.tweets)).to.have.lengthOf.above(1);
     });
+
+    it('uses session\'s .get wrapper', () => {
+      expect(getSpy.called).to.be.true;
+    });
+  });
+
+  describe('#getUser', () => {
+    let getSpy;
+    let userObject;
+    const validScreenName = 'realDonaldTrump';
+    const suspendedScreenName = 'protected';
+    const protectedScreenName = 'HornsUp40';
+
+    before(async () => {
+      getSpy = sandbox.spy(session, 'get');
+      userObject = await session.getUser(validScreenName);
+    });
+
+    after(() => sandbox.restore());
+
+    it('returns a UserObject', () => {
+      expect(userObject).to.be.instanceof(UserObject);
+    });
+
+    it('returns profile data for given screenName', () => {
+      expect(userObject).to.have.property('id', '25073877');
+      expect(userObject).to.have.property('screenName', validScreenName);
+    });
+
+    it('returns profile data for protected accounts', async () => {
+      const user = await session.getUser(protectedScreenName);
+      expect(user).to.have.property('id', '153794693');
+      expect(user).to.have.property('protected', true);
+      expect(user).to.have.property('screenName', protectedScreenName);
+    });
+
+    it('returns a UserObject for suspended accounts', async () => {
+      const user = await session.getUser(suspendedScreenName);
+      expect(user).to.have.property('suspended', true);
+    });
+
 
     it('uses session\'s .get wrapper', () => {
       expect(getSpy.called).to.be.true;

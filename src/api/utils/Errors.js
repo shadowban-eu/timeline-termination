@@ -60,6 +60,25 @@ class NotAReplyError extends ExtendableError {
   }
 }
 
+const twitterErrors = {
+  suspendedAccount: {
+    status: 403,
+    code: 63
+  }
+};
+
+const isSuspendedError = (err) => {
+  const { status, data } = err.response;
+  const { code } = data.errors[0];
+  const {
+    status: suspendedStatus,
+    code: suspendedCode
+  } = twitterErrors.suspendedAccount;
+
+  return status === suspendedStatus && code === suspendedCode;
+};
+
 module.exports.APIError = APIError;
 module.exports.NoRepliesError = NoRepliesError;
 module.exports.NotAReplyError = NotAReplyError;
+module.exports.isSuspendedError = isSuspendedError;
