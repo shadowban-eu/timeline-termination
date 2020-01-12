@@ -14,7 +14,9 @@ const mongoSchema = new Schema({
   hasMedia: Boolean,
   isQuoting: Boolean,
   quotedId: String,
-  parentId: String
+  parentId: String,
+  parentAuthorId: String,
+  parentAuthorScreenName: String
 }, {
   _id: false
 });
