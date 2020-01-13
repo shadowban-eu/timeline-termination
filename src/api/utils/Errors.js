@@ -47,7 +47,7 @@ class APIError extends ExtendableError {
 class NoRepliesError extends ExtendableError {
   constructor(tweetId) {
     const message = `Tweet ${tweetId || '[unknown]'} has no replies.`;
-    super({ message, code: 'ENOREPLIES' });
+    super({ message, code: 'ENOREPLIES', isPublic: false });
     this.tweetId = tweetId;
   }
 }
@@ -55,7 +55,7 @@ class NoRepliesError extends ExtendableError {
 class NotAReplyError extends ExtendableError {
   constructor(tweetId) {
     const message = `Tweet ${tweetId || '[unknown]'} is not a reply.`;
-    super({ message, code: 'ENOTAREPLY' });
+    super({ message, code: 'ENOTAREPLY', isPublic: true });
     this.tweetId = tweetId;
   }
 }
