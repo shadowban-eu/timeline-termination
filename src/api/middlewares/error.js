@@ -37,13 +37,14 @@ exports.converter = (err, req, res, next) => {
       message: 'Validation Error',
       errors: err.errors,
       status: err.status,
-      stack: err.stack,
+      stack: err.stack
     });
   } else if (!(err instanceof APIError)) {
     convertedError = new APIError({
       message: err.message,
       status: err.status,
       stack: err.stack,
+      isPublic: err.isPublic
     });
   }
 
