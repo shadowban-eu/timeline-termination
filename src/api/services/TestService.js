@@ -85,8 +85,10 @@ class TestService {
       return testCase;
     }
 
-    probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
-    testCase.tweets.subject = probeTweet.parentTweet;
+    try {
+      probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
+      testCase.tweets.subject = probeTweet.parentTweet;
+    } catch (err) {} // eslint-disable-line
 
     // no need to test, when it's not hidden
     const isCandidate = !Object.keys(probeTimeline.tweets).includes(probeTweet.parentId);

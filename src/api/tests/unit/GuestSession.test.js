@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
 const UserObject = require('../../utils/UserObject');
+const { TweetDoesNotExistError } = require('../../utils/Errors');
 const { twitterGuestBearer } = require('../../../config/vars');
 const { testProps } = require('../utils');
 
@@ -272,6 +273,8 @@ describe('GuestSession Service', () => {
   });
 
   describe('#getTweet', () => {
+    const deletedTweetId = '1214957301133647874';
+
     afterEach(() => sandbox.restore());
 
     it('returns a TweetObject for tweetId', async () => {
@@ -281,18 +284,10 @@ describe('GuestSession Service', () => {
       testProps(tweet, { tweetId });
     });
 
-    it('returns null on 404 request error', async () => {
-      const getStub = sandbox.stub(session.axiosInstance, 'get').callsFake(async () => {
-        const err = new Error();
-        err.response = {
-          status: 404
-        };
-        throw err;
-      });
-
-      const tweetObject = await session.getTweet('tweetId');
-      expect(getStub.called).to.be.true;
-      expect(tweetObject).to.be.null;
+    it('throws a TweetDoesNotExistError when tweetId doesn\'t', async () => {
+      const getTweetPromise = session.getTweet(deletedTweetId);
+      await expect(getTweetPromise)
+        .to.be.rejectedWith(TweetDoesNotExistError, deletedTweetId);
     });
   });
 
@@ -302,6 +297,7 @@ describe('GuestSession Service', () => {
     let getSpy;
     const tweetId = '1183908355372273665';
     const barrierOnlyTweetId = '1192199021307166720';
+    const deletedTweetId = '1214957301133647874';
 
     before(async () => {
       getSpy = sandbox.spy(session, 'get');
@@ -337,6 +333,12 @@ describe('GuestSession Service', () => {
       expect(Object.keys(barrierOnlyTimeline.tweets)).to.have.lengthOf.above(1);
     });
 
+    it('throws a TweetDoesNotExistError when tweetId doesn\'t', async () => {
+      const getTimelinePromise = session.getTimeline(deletedTweetId);
+      await expect(getTimelinePromise)
+        .to.be.rejectedWith(TweetDoesNotExistError, deletedTweetId);
+    });
+
     it('uses session\'s .get wrapper', () => {
       expect(getSpy.called).to.be.true;
     });
@@ -367,16 +369,16 @@ describe('GuestSession Service', () => {
       });
     });
 
-    it('returns profile data for protected accounts', async () => {
+    it('identifies protected accounts', async () => {
       const user = await session.getUser(protectedScreenName);
       testProps(user, { protected: true });
     });
 
-    it('returns a UserObject for suspended accounts', async () => {
+    it('identifies suspended accounts', async () => {
       const user = await session.getUser(suspendedScreenName);
+      expect(user).to.be.instanceof(UserObject);
       testProps(user, { suspended: true });
     });
-
 
     it('uses session\'s .get wrapper', () => {
       expect(getSpy.called).to.be.true;

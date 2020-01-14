@@ -4,7 +4,8 @@ const { twitterGuestBearer } = require('../../config/vars');
 const DataConversion = require('../utils/DataConversion');
 const TweetObject = require('../utils/TweetObject');
 const UserObject = require('../utils/UserObject');
-const { isSuspendedError } = require('../utils/Errors');
+const { TweetDoesNotExistError } = require('../utils/Errors');
+const { isSuspendedError, isDeletedTweetError } = require('../utils/twitterErrors');
 
 const { error, info } = require('../../config/logger');
 
@@ -203,10 +204,9 @@ GuestSession.prototype.getTweet = async function getTweet(tweetId) {
     const { tweets } = res.data.globalObjects;
     return new TweetObject(tweets[tweetId]);
   } catch (err) {
-    if (err.response.status === 404) {
-      return null;
-    }
-    throw err;
+    throw isDeletedTweetError(err)
+      ? new TweetDoesNotExistError(tweetId)
+      : err;
   }
 };
 
@@ -214,30 +214,36 @@ GuestSession.prototype.getTweet = async function getTweet(tweetId) {
 GuestSession.prototype.getTimeline = async function getTimeline(tweetId) {
   const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
 
-  let res = await this.get(url, { params: timelineParams });
-  let { instructions } = res.data.timeline;
-  let { tweets } = res.data.globalObjects;
-  const tweetCount = Object.keys(tweets).length;
+  try {
+    let res = await this.get(url, { params: timelineParams });
+    let { instructions } = res.data.timeline;
+    let { tweets } = res.data.globalObjects;
+    const tweetCount = Object.keys(tweets).length;
 
-  if (tweetCount <= 1) {
-    const showMore = DataConversion.getShowMoreCursor(instructions);
-    if (showMore) {
-      res = await this.axiosInstance.get(url, {
-        params: {
-          ...timelineParams,
-          cursor: showMore.cursor
-        }
-      });
-      instructions = res.data.timeline.instructions; // eslint-disable-line
-      tweets = res.data.globalObjects.tweets; // eslint-disable-line
+    if (tweetCount <= 1) {
+      const showMore = DataConversion.getShowMoreCursor(instructions);
+      if (showMore) {
+        res = await this.axiosInstance.get(url, {
+          params: {
+            ...timelineParams,
+            cursor: showMore.cursor
+          }
+        });
+        instructions = res.data.timeline.instructions; // eslint-disable-line
+        tweets = res.data.globalObjects.tweets; // eslint-disable-line
+      }
     }
+    return {
+      id: tweetId,
+      owner: tweets[tweetId],
+      instructions,
+      tweets
+    };
+  } catch (err) {
+    throw isDeletedTweetError(err)
+      ? new TweetDoesNotExistError(tweetId)
+      : err;
   }
-  return {
-    id: tweetId,
-    owner: tweets[tweetId],
-    instructions,
-    tweets
-  };
 };
 
 GuestSession.prototype.destroy = function destroy() {
