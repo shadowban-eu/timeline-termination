@@ -26,7 +26,6 @@ describe('Test API', () => {
         .get(`/v1/test/${noRepliesId}`)
         .expect(httpStatus.INTERNAL_SERVER_ERROR)
         .then((res) => {
-          testProps(res.body, { name: 'APIError' });
           const actualError = res.body.errors[0];
           testProps(actualError, {
             name: 'NoRepliesError',

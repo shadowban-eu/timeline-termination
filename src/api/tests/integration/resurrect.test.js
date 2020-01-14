@@ -42,7 +42,6 @@ describe('Resurrect API', () => {
         .get(`/v1/resurrect/${noParentProbeId}`)
         .expect(httpStatus.INTERNAL_SERVER_ERROR)
         .then((res) => {
-          testProps(res.body, { name: 'APIError' });
           const actualError = res.body.errors[0];
           testProps(actualError, {
             name: 'NotAReplyError',
