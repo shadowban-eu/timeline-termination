@@ -5,7 +5,7 @@ const httpStatus = require('http-status');
  */
 class ExtendableError extends Error {
   constructor({
-    message, errors, status, isPublic, stack,
+    message, errors, status, isPublic, stack, code
   }) {
     super(message);
     this.name = this.constructor.name;
@@ -15,6 +15,7 @@ class ExtendableError extends Error {
     this.isPublic = isPublic;
     this.isOperational = true; // This is required since bluebird 4 doesn't append it anymore.
     this.stack = stack;
+    this.code = code;
     // Error.captureStackTrace(this, this.constructor.name);
   }
 }
@@ -43,4 +44,31 @@ class APIError extends ExtendableError {
   }
 }
 
-module.exports = APIError;
+class NoRepliesError extends ExtendableError {
+  constructor(tweetId) {
+    const message = `Tweet ${tweetId || '[unknown]'} has no replies.`;
+    super({ message, code: 'ENOREPLIES', isPublic: false });
+    this.tweetId = tweetId;
+  }
+}
+
+class NotAReplyError extends ExtendableError {
+  constructor(tweetId) {
+    const message = `Tweet ${tweetId || '[unknown]'} is not a reply.`;
+    super({ message, code: 'ENOTAREPLY', isPublic: true });
+    this.tweetId = tweetId;
+  }
+}
+
+class TweetDoesNotExistError extends ExtendableError {
+  constructor(tweetId) {
+    const message = `Tweet ${tweetId || '[unknown]'} does not exist`;
+    super({ message, code: 'ENOTEXIST', isPublic: true });
+    this.tweetId = tweetId;
+  }
+}
+
+module.exports.APIError = APIError;
+module.exports.NoRepliesError = NoRepliesError;
+module.exports.NotAReplyError = NotAReplyError;
+module.exports.TweetDoesNotExistError = TweetDoesNotExistError;

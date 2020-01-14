@@ -2,6 +2,12 @@ const axios = require('axios');
 const { twitterGuestBearer } = require('../../config/vars');
 
 const DataConversion = require('../utils/DataConversion');
+const TweetObject = require('../utils/TweetObject');
+const UserObject = require('../utils/UserObject');
+const { TweetDoesNotExistError } = require('../utils/Errors');
+const { isSuspendedError, isDeletedTweetError } = require('../utils/twitterErrors');
+
+const { error, info } = require('../../config/logger');
 
 const timelineParams = {
   include_entities: true,
@@ -33,12 +39,17 @@ const GuestSession = function GuestSession() {
   this.axiosInstance = axios.create({
     headers: {
       common: {
-        Authorization: `Bearer ${GuestSession.guestBearer}`
+        Authorization: `Bearer ${GuestSession.guestBearer}`,
+        'User-Agent': GuestSession.UA
       }
     },
     withCredentials: true
   });
   this.guestToken = null;
+  this.rateLimitRemaining = null;
+  this.rateLimitReset = null;
+  this.exhausted = false;
+  this.resetTimeout = null;
 };
 
 GuestSession.UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36';
@@ -49,23 +60,67 @@ GuestSession.createSession = async () => {
   const session = new GuestSession();
   session.setGuestToken(await session.getGuestToken());
   GuestSession.pool.push(session);
+  return session;
 };
 
-GuestSession.pickSession = () => {
-  if (GuestSession.pool.length === 0) {
-    throw new RangeError('GuestSession pool is empty. Create one with GuestSession.createSession!');
+GuestSession.pickSession = async () => {
+  const availableSession = GuestSession.pool.length && GuestSession.pool.find(
+    session => !session.exhausted
+  );
+  return availableSession || GuestSession.createSession();
+};
+
+GuestSession.getUser = async screenName =>
+  (await GuestSession.pickSession()).getUser(screenName);
+
+GuestSession.getUserId = async screenName =>
+  (await GuestSession.pickSession()).getUserId(screenName);
+
+GuestSession.getUserTimeline = async userId =>
+  (await GuestSession.pickSession()).getUserTimeline(userId);
+
+GuestSession.getTweet = async tweetId =>
+  (await GuestSession.pickSession()).getTweet(tweetId);
+
+GuestSession.getTimeline = async (tweetId, noReplyCheck = false) =>
+  (await GuestSession.pickSession()).getTimeline(tweetId, noReplyCheck);
+
+GuestSession.prototype.get = async function get(url, options) {
+  try {
+    const res = await this.axiosInstance.get(url, options);
+    this.rateLimitRemaining = parseInt(res.headers['x-rate-limit-remaining'], 10);
+    this.rateLimitReset = parseInt(res.headers['x-rate-limit-reset'], 10) * 1000;
+
+    if (this.rateLimitRemaining === 0) {
+      this.exhausted = true;
+      this.scheduleReset();
+    }
+    return res;
+  } catch (err) {
+    if (options && options.passError) {
+      throw err;
+    }
+    switch (err.response.status) {
+      case 403:
+        error('Recreating session due to 403 error', {
+          err,
+          response: err.response,
+          session: this
+        });
+        this.destroy();
+        return (await GuestSession.createSession()).get(url, options);
+      case 429:
+        error('Adding session due to 429 error', {
+          err,
+          response: err.response,
+          session: this
+        });
+        return (await GuestSession.pickSession()).get(url, options);
+      default:
+        throw err;
+    }
   }
-  return Math.floor(Math.random() * GuestSession.pool.length);
 };
-
-GuestSession.getUserId = screenName =>
-  GuestSession.pool[GuestSession.pickSession()].getUserId(screenName);
-
-GuestSession.getUserTimeline = userId =>
-  GuestSession.pool[GuestSession.pickSession()].getUserTimeline(userId);
-
-GuestSession.getTimeline = tweetId =>
-  GuestSession.pool[GuestSession.pickSession()].getTimeline(tweetId);
 
 GuestSession.prototype.getGuestToken = async function getGuestToken() {
   const res = await this.axiosInstance.post('https://api.twitter.com/1.1/guest/activate.json');
@@ -81,8 +136,26 @@ GuestSession.prototype.setGuestToken = function setGuestToken(guestToken) {
   this.axiosInstance.defaults.headers.common['X-Guest-Token'] = this.guestToken;
 };
 
+GuestSession.prototype.getUser = async function getUser(screenName) {
+  try {
+    const res = await this.get(
+      'https://api.twitter.com/1.1/users/show.json',
+      {
+        params: { screen_name: screenName },
+        passError: true
+      }
+    );
+    return new UserObject(res.data);
+  } catch (err) {
+    if (isSuspendedError(err)) {
+      return new UserObject({ suspended: true });
+    }
+    throw err;
+  }
+};
+
 GuestSession.prototype.getUserId = async function getUserId(screenName) {
-  const res = await this.axiosInstance.get(
+  const res = await this.get(
     'https://api.twitter.com/graphql/G6Lk7nZ6eEKd7LBBZw9MYw/UserByScreenName',
     {
       params: {
@@ -96,9 +169,11 @@ GuestSession.prototype.getUserId = async function getUserId(screenName) {
   return res.data.data.user.rest_id;
 };
 
-
-GuestSession.prototype.getUserTimeline = async function getUserTimeline(userId, cursor) {
-  const res = await this.axiosInstance.get(
+GuestSession.prototype.getUserTimeline = async function getUserTimeline({
+  userId,
+  cursor
+}) {
+  const res = await this.get(
     `https://api.twitter.com/2/timeline/profile/${userId}.json`,
     {
       params: Object.assign({}, timelineParams, {
@@ -108,24 +183,82 @@ GuestSession.prototype.getUserTimeline = async function getUserTimeline(userId, 
       })
     }
   );
+  const { tweets } = res.data.globalObjects;
+  const tweetObjects = Object.keys(tweets).map(tweetId => new TweetObject(tweets[tweetId]));
+
   return {
-    tweets: res.data.globalObjects.tweets,
+    tweets: tweetObjects,
     cursor: DataConversion.getCursorFromTimeline(res.data.timeline)
   };
 };
 
+GuestSession.prototype.getTweet = async function getTweet(tweetId) {
+  try {
+    const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
+    const res = await this.get(url, {
+      params: {
+        ...timelineParams,
+        count: 1
+      }
+    });
+    const { tweets } = res.data.globalObjects;
+    return new TweetObject(tweets[tweetId]);
+  } catch (err) {
+    throw isDeletedTweetError(err)
+      ? new TweetDoesNotExistError(tweetId)
+      : err;
+  }
+};
+
+// eslint-disable-next-line
 GuestSession.prototype.getTimeline = async function getTimeline(tweetId) {
-  const res = await this.axiosInstance.get(
-    `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`,
-    {
-      params: timelineParams
+  const url = `https://api.twitter.com/2/timeline/conversation/${tweetId}.json`;
+
+  try {
+    let res = await this.get(url, { params: timelineParams });
+    let { instructions } = res.data.timeline;
+    let { tweets } = res.data.globalObjects;
+    const tweetCount = Object.keys(tweets).length;
+
+    if (tweetCount <= 1) {
+      const showMore = DataConversion.getShowMoreCursor(instructions);
+      if (showMore) {
+        res = await this.axiosInstance.get(url, {
+          params: {
+            ...timelineParams,
+            cursor: showMore.cursor
+          }
+        });
+        instructions = res.data.timeline.instructions; // eslint-disable-line
+        tweets = res.data.globalObjects.tweets; // eslint-disable-line
+      }
     }
-  );
-  return {
-    id: tweetId,
-    instructions: res.data.timeline.instructions,
-    tweets: res.data.globalObjects.tweets
-  };
+    return {
+      id: tweetId,
+      owner: tweets[tweetId],
+      instructions,
+      tweets
+    };
+  } catch (err) {
+    throw isDeletedTweetError(err)
+      ? new TweetDoesNotExistError(tweetId)
+      : err;
+  }
+};
+
+GuestSession.prototype.destroy = function destroy() {
+  GuestSession.pool.splice(GuestSession.pool.findIndex(session => session === this), 1);
+};
+
+GuestSession.prototype.scheduleReset = function scheduleReset() {
+  const timeoutDelta = (this.rateLimitReset - Date.now()) + 1000;
+  info('Scheduling rate-limit reset', { session: this });
+  this.resetTimeout = setTimeout(() => {
+    this.rateLimitReset = null;
+    this.rateLimitRemaing = null;
+    this.exhausted = false;
+    this.resetTimeout = null;
+  }, timeoutDelta);
 };
 
 module.exports = GuestSession;

@@ -1,6 +1,6 @@
 // make bluebird default Promise
 Promise = require('bluebird'); // eslint-disable-line no-global-assign
-const { port, env } = require('./config/vars');
+const { port, env, guestSessions } = require('./config/vars');
 const logger = require('./config/logger');
 const app = require('./config/express');
 const mongoose = require('./config/mongoose');
@@ -18,7 +18,7 @@ const closeConnections = () => {
 };
 
 const initGuestSessions = () => {
-  const GUEST_SESSION_POOL_SIZE = process.env.NODE_ENV === 'test' ? 1 : 10;
+  const GUEST_SESSION_POOL_SIZE = guestSessions;
   const sessionInits = [];
   logger.info(`Creating ${GUEST_SESSION_POOL_SIZE} guest sessions...`);
   for (let i = 0; i < GUEST_SESSION_POOL_SIZE; i += 1) {
@@ -55,6 +55,18 @@ const init = async () => {
 if (process.env.NODE_ENV !== 'test') {
   init();
 }
+
+process.on('unhandledRejection', (err) => {
+  const { response } = err;
+  const data = response ? response.data : undefined;
+  const status = response ? response.status : undefined;
+  // eslint-disable-next-line
+  logger.error('UHANDLED REJECTION EVENT', {
+    err: JSON.stringify(err, Object.getOwnPropertyNames(err)),
+    status,
+    data
+  });
+});
 
 /**
 * Exports express

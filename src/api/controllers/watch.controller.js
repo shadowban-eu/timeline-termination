@@ -2,7 +2,9 @@ const httpStatus = require('http-status');
 
 const WatchedUser = require('../models/WatchedUser.model');
 const GuestSession = require('../services/GuestSession');
-const APIError = require('../utils/APIError');
+const TimelineWatchService = require('../services/TimelineWatchService');
+
+const { APIError } = require('../utils/Errors');
 
 module.exports.add = async (req, res, next) => {
   const { screenName } = req.body;
@@ -14,6 +16,9 @@ module.exports.add = async (req, res, next) => {
       active: true
     });
     await watchedUser.save();
+
+    TimelineWatchService.add(watchedUser);
+
     return res.json({
       watchedUser: watchedUser.transform()
     });
@@ -26,4 +31,11 @@ module.exports.add = async (req, res, next) => {
     }
     return next(err);
   }
+};
+
+module.exports.listActive = async (req, res) => {
+  const watchedUsers = Object.keys(TimelineWatchService.watching).map(
+    key => TimelineWatchService.watching[key].user.transform()
+  );
+  res.json({ watchedUsers });
 };

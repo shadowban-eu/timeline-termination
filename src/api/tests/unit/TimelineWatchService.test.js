@@ -1,21 +1,30 @@
 /* eslint-disable no-unused-expressions */
 const { expect } = require('chai');
-const forEach = require('lodash.foreach');
+const sinon = require('sinon');
 
 const TimelineWatchService = require('../../services/TimelineWatchService');
+const TestService = require('../../services/TestService');
 const GuestSession = require('../../services/GuestSession');
 const TweetObject = require('../../utils/TweetObject');
 const WatchedUser = require('../../models/WatchedUser.model');
+const { testProps } = require('../utils');
 
-describe('TimelineWatch Service', function TimelineWatchServiceTest() {
-  this.timeout(10000);
+const sandbox = sinon.createSandbox();
 
-  const testUser = {
+describe('TimelineWatch Service', () => {
+  let watchedUser;
+  const watchedUserData = {
     userId: '25073877',
     screenName: 'realDonaldTrump',
     active: true
   };
-  let watchedUser;
+
+  let notActiveWatchedUser;
+  const notActiveWatchedUserData = {
+    userId: '12301',
+    screenName: 'definitelyNotValid',
+    active: false
+  };
 
   before(async () => {
     try {
@@ -27,8 +36,10 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
         await GuestSession.createSession();
       }
     }
-    watchedUser = new WatchedUser(testUser);
+    watchedUser = new WatchedUser(watchedUserData);
+    notActiveWatchedUser = new WatchedUser(notActiveWatchedUserData);
     await watchedUser.save();
+    await notActiveWatchedUser.save();
   });
 
   after(() => WatchedUser.deleteMany({}));
@@ -66,41 +77,93 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
   });
 
   describe('#pollTimeline', () => {
-    it('queries user\'s profile and returns tweetObjects', async () => {
+    let setSeenSpy;
+    let runTestsSpy;
+    before(() => {
+      runTestsSpy = sandbox.spy(TimelineWatchService, 'runTests');
+    });
+    after(() => sandbox.restore());
+
+    it('queries user\'s profile and returns TweetObjects', async () => {
       const tws = new TimelineWatchService(watchedUser);
+      setSeenSpy = sandbox.spy(tws, 'setSeenIds');
 
       const tweetObjects = await tws.pollTimeline();
-      forEach(tweetObjects, (tweet) => {
+      expect(tweetObjects).to.be.an('array').with.length.above(0);
+      tweetObjects.forEach((tweet) => {
         expect(tweet).to.be.instanceof(TweetObject);
         expect(tweet.userId).to.be.eql(watchedUser.userId);
       });
+    });
+
+    it('sets the new tweet\'s ids to seen', () => {
+      expect(setSeenSpy.called).to.be.true;
+    });
+
+    it('runs tests for new found tweets', () => {
+      expect(runTestsSpy.called).to.be.true;
+    });
+  });
+
+  describe('.runTests', () => {
+    after(() => sandbox.restore());
+
+    it('runs and returns TestCases for Array of tweet ids', async () => {
+      const tweetIds = [
+        '1186643044432564224',
+        '1192197447948394496',
+        '1192208700330655746',
+        '1192213962659680257',
+        '1192226377325527041'
+      ];
+      const testSpy = sandbox.stub(TestService, 'test').returnsArg(0);
+      const testCases = await TimelineWatchService.runTests(tweetIds);
+      expect(testSpy.callCount).to.eql(tweetIds.length);
+      expect(testCases).to.eql(tweetIds);
     });
   });
 
   describe('#start', () => {
     let tws;
+    let stopSpy;
+
     before(() => {
       tws = new TimelineWatchService(watchedUser);
+      stopSpy = sinon.spy(tws, 'stop');
     });
-    after(() => tws.stop());
+    after(() => {
+      sinon.restore();
+      tws.stop();
+    });
 
     it('starts polling the user\'s profile timeline', () => {
       tws.start();
-      expect(tws.pollingInterval).to.have.property('_destroyed', false);
+      testProps(tws.pollingTimeout, {
+        _destroyed: false
+      });
     });
 
     it('uses the user\'s pollingTimeout value', () =>
-      expect(tws.pollingInterval).to.have.property('_idleTimeout', tws.user.pollingTimeout)
+      testProps(tws.pollingTimeout, {
+        _idleTimeout: tws.user.pollingTimeout
+      })
     );
+
+    it('stops/replaces a running polling Timer', () => {
+      tws.start();
+      expect(stopSpy.called).to.be.true;
+    });
   });
 
   describe('#stop', () => {
-    it('stops a running pollingInterval', async () => {
+    it('stops a running pollingTimeout', async () => {
       const tws = new TimelineWatchService(watchedUser);
       tws.start();
-      expect(tws.pollingInterval).to.have.property('_destroyed', false);
+      testProps(tws.pollingTimeout, {
+        _destroyed: false
+      });
       tws.stop();
-      expect(tws.pollingInterval).to.be.null;
+      expect(tws.pollingTimeout).to.be.null;
     });
   });
 
@@ -113,7 +176,7 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     after(() => addedService.stop());
 
     it('adds a WatchedUser to .watching', () => {
-      expect(TimelineWatchService.watching).to.have.property(watchedUser.userId);
+      testProps(TimelineWatchService.watching, { [watchedUser.userId]: undefined });
     });
 
     it('returns created/added TimelineWatchService instance', () => {
@@ -122,7 +185,12 @@ describe('TimelineWatch Service', function TimelineWatchServiceTest() {
     });
 
     it('starts watching, if watchedUser.active is true', () => {
-      expect(addedService.pollingInterval).to.have.property('_destroyed', false);
+      testProps(addedService.pollingTimeout, { _destroyed: false });
+    });
+
+    it('does not start watching, if watchedUser.active is false', () => {
+      const tws = TimelineWatchService.add(notActiveWatchedUser);
+      expect(tws.pollingTimeout).to.be.null;
     });
   });
 });

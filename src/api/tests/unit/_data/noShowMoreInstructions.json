@@ -1,0 +1,28 @@
+[
+  {
+    "addEntries": {
+      "entries": [
+        {
+          "entryId": "tweet-1192199021307166720",
+          "sortIndex": "8031173015547609087",
+          "content": {
+            "item": {
+              "content": {
+                "tweet": {
+                  "id": "1192199021307166720",
+                  "displayType": "Tweet",
+                  "hasModeratedReplies": false
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "terminateTimeline": {
+      "direction": "Top"
+    }
+  }
+]

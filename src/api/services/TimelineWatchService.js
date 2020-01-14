@@ -1,10 +1,10 @@
 const filter = require('lodash.filter');
 
 const GuestSession = require('./GuestSession');
-const TweetObject = require('../utils/TweetObject');
+const TestService = require('./TestService');
 const WatchedUser = require('../models/WatchedUser.model');
 
-const { debug } = require('../../config/logger');
+const { debug, info } = require('../../config/logger');
 
 const userTag = user => (user ? `${user.screenName} (${user.userId})` : 'null (null)');
 
@@ -14,43 +14,56 @@ class TimelineWatchService {
       throw new ReferenceError('First parameter must be a WatchedUser instance.');
     }
     this.user = user;
-    this.pollingInterval = null;
+    this.pollingTimeout = null;
   }
 
   setSeenIds(tweetIds) {
+    if (!tweetIds || !tweetIds.length) {
+      return;
+    }
     debug(`Updating seenIds for ${userTag(this.user)} with ${tweetIds}`);
     this.user.seenIds = this.user.seenIds.concat(tweetIds);
-    return this.user.save();
+    this.user.save();
   }
 
   start() {
     debug(`Starting to watch ${userTag(this.user)}`);
-    if (this.pollingInterval) {
+    if (this.pollingTimeout) {
       this.stop();
     }
-    this.pollingInterval = setInterval(
+    this.pollingTimeout = setInterval(
       this.pollTimeline.bind(this),
       this.user.pollingTimeout
     );
+    this.pollTimeline();
   }
 
   stop() {
     debug(`Stopping to watch ${userTag(this.user)}`);
-    clearInterval(this.pollingInterval);
-    this.pollingInterval = null;
+    clearInterval(this.pollingTimeout);
+    this.pollingTimeout = null;
   }
 
   async pollTimeline() {
-    debug(`Polling timeline of ${userTag(this.user)}`);
-    const { tweets } = await GuestSession.getUserTimeline(this.user.userId);
-    const withoutRetweets = filter(tweets, { user_id_str: this.user.userId });
-    const tweetIds = filter(withoutRetweets, tweet => !this.user.seenIds.includes(tweet.id_str))
-      .map(tweet => tweet.id_str)
+    info(`Polling timeline of ${userTag(this.user)}`);
+    const { userId, seenIds } = this.user;
+    const { tweets } = await GuestSession.getUserTimeline({ userId });
+    const withoutRetweets = filter(tweets, { userId });
+    const newTweetIds = filter(withoutRetweets, tweet => !seenIds.includes(tweet.tweetId))
+      .map(tweet => tweet.tweetId)
       .sort();
-    const newTweets = filter(withoutRetweets, tweet => tweetIds.includes(tweet.id_str));
+    const newTweets = filter(withoutRetweets, tweet => newTweetIds.includes(tweet.tweetId));
 
-    this.setSeenIds(tweetIds);
-    return newTweets.map(tweet => new TweetObject(tweet));
+    if (newTweetIds.length) {
+      TimelineWatchService.runTests(newTweetIds);
+      this.setSeenIds(newTweetIds);
+    }
+
+    return newTweets;
+  }
+
+  static async runTests(tweetIds) {
+    return Promise.all(tweetIds.map(TestService.test));
   }
 
   static add(watchedUser) {
