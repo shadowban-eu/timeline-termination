@@ -1,6 +1,6 @@
 {
   "name": "timeline-termination-test",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Twitter TimelineTerminationBan test",
   "author": "Raphael Beer <raphael.beer@protonmail.com>",
   "main": "src/index.js",
