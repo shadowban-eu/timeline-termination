@@ -1,6 +1,10 @@
 Deleted; violation against rules
 https://api.twitter.com/2/timeline/conversation/1214965401156640768.json
 
+Deleted:
+  {deletedTweetId}: https://twitter.com/shadowbaneu_bot/status/1214957301133647874
+  {resurrectDeletedProbeId}: https://twitter.com/shadowbaneu_bot/status/1214957370431942656
+
 Protected:
   @gunnarsonrani
   {protectedTweetId}: https://twitter.com/gunnarsonrani/status/1215986882905022472
@@ -9,3 +13,12 @@ Protected:
 Suspended:
   @fossybeer
   {suspendedReplyId}: https://twitter.com/LateNightGirlMe/status/1209194776656072704
+
+Terminated:
+  @fackfelowat
+  {terminatedId}: https://twitter.com/fackfellowat/status/1183908355372273665
+  {terminatedProbeId}: https://twitter.com/Ticksneaker/status/1183909147072520193
+
+NotAReplyError:
+  @fackfellowat https://twitter.com/fackfellowat/status/1183908355372273665
+  (Or any tweet that is not a reply)

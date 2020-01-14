@@ -60,25 +60,15 @@ class NotAReplyError extends ExtendableError {
   }
 }
 
-const twitterErrors = {
-  suspendedAccount: {
-    status: 403,
-    code: 63
+class TweetDoesNotExistError extends ExtendableError {
+  constructor(tweetId) {
+    const message = `Tweet ${tweetId || '[unknown]'} does not exist`;
+    super({ message, code: 'ENOTEXIST', isPublic: true });
+    this.tweetId = tweetId;
   }
-};
-
-const isSuspendedError = (err) => {
-  const { status, data } = err.response;
-  const { code } = data.errors[0];
-  const {
-    status: suspendedStatus,
-    code: suspendedCode
-  } = twitterErrors.suspendedAccount;
-
-  return status === suspendedStatus && code === suspendedCode;
-};
+}
 
 module.exports.APIError = APIError;
 module.exports.NoRepliesError = NoRepliesError;
 module.exports.NotAReplyError = NotAReplyError;
-module.exports.isSuspendedError = isSuspendedError;
+module.exports.TweetDoesNotExistError = TweetDoesNotExistError;
