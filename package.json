@@ -21,7 +21,7 @@
     "test:unit:watch": "nodemon --exec 'npm run test:unit || exit 1'",
     "test:integration": "cross-env NODE_ENV=test NODE_TEST_SUITE=integration nyc --reporter=html --reporter=text mocha --timeout 20000 src/api/tests/index.test.js",
     "test:integration:watch": "nodemon --exec 'npm run test:integration || exit 1'",
-    "test:watch": "cross-env NODE_ENV=test mocha --watch src/api/tests/unit",
+    "test:watch": "nodemon --exec 'npm run test || exit 1",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "postcoverage": "open-cli coverage/lcov-report/index.html",
     "validate": "npm run lint && cross-env VALIDATING=true npm run test",
