@@ -6,6 +6,10 @@ const twitterErrors = {
   deletedTweet: {
     status: 404,
     code: 34
+  },
+  deletedAccount: {
+    status: 404,
+    code: 50
   }
 };
 
@@ -31,3 +35,4 @@ module.exports.isSuspendedError = err => isTwitterError(err, twitterErrors.suspe
 // poor name; indicates 404 request errors for conversation-timelines, without
 // determining whether tweet ever existed
 module.exports.isDeletedTweetError = err => isTwitterError(err, twitterErrors.deletedTweet);
+module.exports.isDeletedAccountError = err => isTwitterError(err, twitterErrors.deletedAccount);

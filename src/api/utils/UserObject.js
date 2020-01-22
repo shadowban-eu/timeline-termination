@@ -3,12 +3,14 @@ class UserObject {
     id_str: id,
     screen_name: screenName,
     protected: isProtected,
-    suspended
+    suspended,
+    deleted
   }) {
     this.id = id;
     this.screenName = screenName;
     this.protected = isProtected;
     this.suspended = suspended;
+    this.deleted = deleted;
   }
 }
 

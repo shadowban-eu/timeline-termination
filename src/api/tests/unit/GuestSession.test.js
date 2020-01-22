@@ -350,6 +350,7 @@ describe('GuestSession Service', () => {
     const validScreenName = 'realDonaldTrump';
     const suspendedScreenName = 'fossybeer';
     const protectedScreenName = 'gunnarsonrani';
+    const deletedScreenName = 'scottpa79047871';
 
     before(async () => {
       getSpy = sandbox.spy(session, 'get');
@@ -378,6 +379,12 @@ describe('GuestSession Service', () => {
       const user = await session.getUser(suspendedScreenName);
       expect(user).to.be.instanceof(UserObject);
       testProps(user, { suspended: true });
+    });
+
+    it('identifies non-existent accounts', async () => {
+      const user = await session.getUser(deletedScreenName);
+      expect(user).to.be.instanceof(UserObject);
+      testProps(user, { deleted: true });
     });
 
     it('uses session\'s .get wrapper', () => {

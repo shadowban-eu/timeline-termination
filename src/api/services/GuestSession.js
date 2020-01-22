@@ -5,7 +5,11 @@ const DataConversion = require('../utils/DataConversion');
 const TweetObject = require('../utils/TweetObject');
 const UserObject = require('../utils/UserObject');
 const { TweetDoesNotExistError } = require('../utils/Errors');
-const { isSuspendedError, isDeletedTweetError } = require('../utils/twitterErrors');
+const {
+  isSuspendedError,
+  isDeletedTweetError,
+  isDeletedAccountError
+} = require('../utils/twitterErrors');
 
 const { error, info } = require('../../config/logger');
 
@@ -149,6 +153,9 @@ GuestSession.prototype.getUser = async function getUser(screenName) {
   } catch (err) {
     if (isSuspendedError(err)) {
       return new UserObject({ suspended: true });
+    }
+    if (isDeletedAccountError(err)) {
+      return new UserObject({ deleted: true });
     }
     throw err;
   }
