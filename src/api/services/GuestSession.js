@@ -152,10 +152,10 @@ GuestSession.prototype.getUser = async function getUser(screenName) {
     return new UserObject(res.data);
   } catch (err) {
     if (isSuspendedError(err)) {
-      return new UserObject({ suspended: true });
+      return new UserObject({ screen_name: screenName, suspended: true });
     }
     if (isDeletedAccountError(err)) {
-      return new UserObject({ deleted: true });
+      return new UserObject({ screen_name: screenName, deleted: true });
     }
     throw err;
   }
