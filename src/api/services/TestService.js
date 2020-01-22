@@ -85,6 +85,12 @@ class TestService {
       return testCase;
     }
 
+    if (parentUser.deleted) {
+      testCase.authorDeleted = true;
+      await testCase.save();
+      return testCase;
+    }
+
     try {
       probeTweet.parentTweet = await GuestSession.getTweet(probeTweet.parentId);
       testCase.tweets.subject = probeTweet.parentTweet;

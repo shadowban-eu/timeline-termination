@@ -105,6 +105,7 @@ describe('Test Service', () => {
     const notTerminatedProbeId = '1189637556914270209';
     const suspendedProbeId = '1209194776656072704';
     const protectedProbeId = '1215987140351479809';
+    const authorDeletedProbeId = '1219658203148976128';
 
     before(async () => {
       terminatedTestCase = await TestService.resurrect(terminatedProbeId);
@@ -156,6 +157,15 @@ describe('Test Service', () => {
       };
       const protectedTestCase = await TestService.resurrect(protectedProbeId);
       testProps(protectedTestCase, expectedProps);
+    });
+
+    it('identifies deleted authors', async () => {
+      const expectedProps = {
+        resurrected: true,
+        authorDeleted: true
+      };
+      const authorDeletedTestCase = await TestService.resurrect(authorDeletedProbeId);
+      testProps(authorDeletedTestCase, expectedProps);
     });
   });
 });
