@@ -11,38 +11,51 @@ if (env === 'development') {
 }
 
 /**
-* Connect to mongo db
-*
-* @returns {object} Mongoose connection
-* @public
-*/
-exports.connect = () => new Promise((resolve) => {
-  // Retry MONGO_RETRIES times on error and exit application on last
-  let attempt = 1;
-  const connectWithRetry = () => mongoose.connect(mongo.uri, {
-    keepAlive: 1,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true
-  }, (err) => {
-    if (err) {
-      if (attempt === mongo.retries) {
-        logger.error('MongoDB connection error');
-        logger.error(err);
-        process.exit(-1);
-      }
-      logger.warn(`MongoDB connection error. Retrying in 7 sec [${attempt}/${mongo.retries}]`);
-      attempt += 1;
-      return setTimeout(connectWithRetry, 7000);
+ * Connect to mongo db
+ *
+ * @returns {object} Mongoose connection
+ * @public
+ */
+exports.connect = () =>
+  new Promise((resolve) => {
+    // Retry MONGO_RETRIES times on error and exit application on last
+    let attempt = 1;
+    const connectWithRetry = () =>
+      mongoose.connect(
+        mongo.uri,
+        {
+          keepAlive: 1,
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+          useCreateIndex: true,
+          authSource: 'admin',
+          user: mongo.user,
+          pass: mongo.password
+        },
+        (err) => {
+          if (err) {
+            if (attempt === mongo.retries) {
+              logger.error('MongoDB connection error');
+              logger.error(err);
+              process.exit(-1);
+            }
+            logger.warn(
+              `MongoDB connection error. Retrying in 7 sec [${attempt}/${mongo.retries}]`
+            );
+            logger.error(err);
+            logger.info(mongo.password);
+            attempt += 1;
+            return setTimeout(connectWithRetry, 7000);
+          }
+          logger.info('MongoDB connection established.');
+          return resolve(mongoose.connection);
+        }
+      );
+
+    // print mongoose logs in dev env
+    if (env === 'development') {
+      mongoose.set('debug', true);
     }
-    logger.info('MongoDB connection established.');
-    return resolve(mongoose.connection);
+
+    connectWithRetry();
   });
-
-  // print mongoose logs in dev env
-  if (env === 'development') {
-    mongoose.set('debug', true);
-  }
-
-  connectWithRetry();
-});
