@@ -22,3 +22,12 @@ Terminated:
 NotAReplyError:
   @fackfellowat https://twitter.com/fackfellowat/status/1183908355372273665
   (Or any tweet that is not a reply)
+
+
+Other terminated samples:
+
+  - https://twitter.com/michaelhoneyEU/status/1228981485623037956
+  Different, in that it is only hidden in thread:
+   https://twitter.com/ScepticalAussie/status/1229522889348567040
+  Retweeting hidden one, nor the quoted (with the video) does replicate
+  the effect
